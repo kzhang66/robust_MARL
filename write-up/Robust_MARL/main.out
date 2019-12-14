@@ -1,0 +1,11 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Problem Formulation}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Markov Games and MARL}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Formulation 1: Robust Markov Game}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Formulation 2: MARL with Unknown Reward}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Multi-Car Arena Platform}{section.2}% 6
+\BOOKMARK [1][-]{section.3}{Algorithms}{}% 7
+\BOOKMARK [2][-]{subsection.3.1}{Value Iteration for Robust Markov Games}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.2}{Q-Learning for Robust MARL}{section.3}% 9
+\BOOKMARK [3][-]{subsubsection.3.2.1}{Convergence Results}{subsection.3.2}% 10
+\BOOKMARK [2][-]{subsection.3.3}{Policy Gradient/Actor-Critic for Robust MARL}{section.3}% 11

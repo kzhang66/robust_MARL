@@ -1,0 +1,93 @@
+
+
+
+\section{Problem Formulation}\label{sec:background}
+
+In this section, we present some preliminary background  for multi-agent reinforcement learning,   game theory, and multi-car racing for DeepRacer. 
+
+\subsection{Multi-Agent Reinforcement Learning}\label{sec:MARL_form} 
+In order to model the interaction among agents, a general framework of \emph{Markov games} has been used  in the literature of MARL \citep{littman1994markov}. 
+In particular, a Markov game $\cG$ is usually characterized by a tuple 
+\$
+\cG:=\la\cN,\cS,\{\cA^i\}_{i\in\cN},\{R^i\}_{i\in\cN},P,\gamma\ra,
+\$
+ where $\cN$ denotes the set of $N$ agents, $\cS$ denotes the state space that is common to all agents, $\cA^i$ denotes the action space of agent $i\in\cN$. $R^i:\cS\times\cA^1\times\cdots\times\cA^N\to \RR$ represents the reward function of agent $i$, which is dependent on the state and the joint action of all agents.   $P:\cS\times\cA^1\times\cdots\times\cA^N\to\Delta(\cS)$ represents the state transition probability that is a mapping from the current state and the joint action to the probability distribution over the state space.  $\gamma\in(0,1]$ is the discounting factor. 
+
+
+At each time $t$, 
+each agent  selects its own action $a^i_t\in\cA^i$ in face of the  system state $s_t$, according to its own policy $\pi^i:\cS\to \Delta(\cA^i)$, which is a mapping from the state space to the probability distribution over action space $\cA^i$. Then the system transits to the next state $s_{t+1}$ and each agent $i$ receives the instantaneous reward $r^i_t=R^i(s_t,a^1_1,\cdots,a^N_t)$. The goal of each agent $i$ is to maximize the long-term return $J^i$ calculated using $r^i_t$, i.e., 
+\#\label{equ:def_return_i} 
+\max_{\pi^i}\quad J^i(\pi^i,\pi^{-i}):=\EE\bigg[\sum_{t=0}^\infty \gamma^tr^i_t\bigggiven s_0,a^i_t\sim\pi^i(\cdot\given s_t)\bigg]
+\#
+where  $-i$ represents the indices of all agents except agent $i$, and 
+$\pi^{-i}:=\prod_{j\neq i}\pi^j$ refers to the joint policy of all agents except agent $i$. 
+Note that different from the setting of single-agent RL, the objective of agent $i$  not only depends on its own policy $\pi^i$, but also on others' joint policy $\pi^{-i}$. Therefore, from the perspective of a single-agent $i$, the problem is no longer stationary and Markov \citep{busoniu2008comprehensive}. In the same vein, one can define the value and action-value(Q)-function for each agent $i$ as follows 
+\$
+V^i(s)&:=\EE\bigg[\sum_{t=0}^\infty \gamma^tr^i_t\bigggiven s_0=s,a^i_t\sim\pi^i(\cdot\given s_t)\bigg], \\ Q^i(s,a^1,\cdots,a^N)&:=\EE\bigg[\sum_{t=0}^\infty \gamma^tr^i_t\bigggiven s_0=s,a^i_0=a^i,a^i_t\sim\pi^i(\cdot\given s_t)\bigg]. 
+\$ 
+
+
+
+
+Due to the coupling of agents' policies in $J^i$, the  solution concept of maximizing the return of a single agent is unattainable. Instead, one commonly used solution concept is the \emph{Nash equilibrium} (NE) of the game. Specifically, the NE is defined as the point of a joint policy $\pi_*:=(\pi_*^1,\cdots,\pi_*^N)$ at which 
+\#\label{equ:def_NE}
+J^i(\pi^i_*,\pi^{-i}_*)\geq J^i(\pi^i,\pi^{-i}_*),\quad \forall i\in\cN,
+\#
+namely, given all other agents' equilibrium policy $\pi^{-i}_*$, there is no motivation for agent $i$ to deviate from $\pi^{i}_*$. Hence, the goal of MARL is to solve for the NE of the Markov game $\cG$ without the knowledge of the model.  
+
+
+
+On the other hand,  if all the opponents policy $\pi^{-i}$ is fixed, the problem for agent $i$ reduces to a single-agent decision-making problem $\cM^i:=\la\cS,\cA^i,\tilde R^i,\tilde P^i,\gamma\ra$, where 
+\$
+\tilde R^i(s,a^i)&:=\int_{\cA^{-i}}R^i(s,a^i,a^{-i})\pi^{-i}(a^{-i}\given s)da^{-i}\\
+\tilde P^i(\cdot\given s,a^i)&:=\int_{\cA^{-i}}P(\cdot\given s,a^i,a^{-i})\pi^{-i}(a^{-i}\given s)da^{-i}.
+\$
+To simplify the notation, we also define the \emph{best-response} operator $\cB^i:\Pi^{-i}\to\Pi^i$, where $\Pi^{i}$ represents the policy space for agent $i$, as follows:
+\$
+\cB^i(\pi^{-i}):=\argmax_{\pi^i}~~J^i(\pi^i,\pi^{-i}). 
+\$
+Let $\cB:=(\cB^1,\cdots,\cB^N)$, then the NE is the fixed point of the operator $\cB$, i.e., 
+$\pi_*=\cB(\pi_*)$. In addition, viewing the NE using the best-response operator motivates the use of \emph{opponent-modeling} in the algorithm design later. 
+   
+
+\subsection{Multi-Car Racing for DeepRacer} \label{sec:multi_car_racing}
+In general, multi-car racing with the current DeepRacer system configuration can be modeled as a Markov game with partial-observability. For notational simplicity, we consider the setting with only two cars\footnote{Note that our formulation  and algorithm design later can  be readily generalized to the setting with $N>2$ cars.}. 
+Specifically, the state  $s=(s^1,s^2)$ is the position of both cars on the track, where $s^i=(x^i,y^i)$ denotes the coordinates of the car $i$ on the map. The action of each car $i$ is its velocity $a^i=v^i=(v_x^i,v_y^i)$.  The transition probability model is the physical model that deterministically  describes the advance of all cars, i.e., 
+\$
+s^i_{t+1}=s^i_{t}+\Delta t*(a^i_t).
+\$
+Each car has its own reward function $R^i(s,a^1,a^2)$, which characterizes the goal of both finishing the racing as soon as possible and avoiding collision with the opponent during racing. 
+Note that both goals are dependent on the state and joint action of both agents. 
+Details of engineering the reward function can be found in the quip document \cite{reward_design_quip} and will not be discussed here. 
+
+In the current single-car setting, the DeepRacer has access to the image stream from the camera it carries. The image, which is in fact the \emph{observation}, has been treated as the \emph{state}, and has achieved success previously in both simulations and sim-to-real experiments. The observation is denoted by $O^i(s',a^1,a^2)$.
+This is mainly due to the fact that the state in single-car setting is the position of the car, which can be identified by the image observation (almost) without ambiguity. 
+However, such partial observability will cause great challenge in the multi-agent setting, since the state here depends on the position of all cars, which cannot be completely captured by the image of the  camera on a single car. This problem can be generally modeled as a partially-observed Markov/Stochastic game (POSG) \citep{hansen2004dynamic}, which has been notoriously known to be intractable since its algorithmic complexity grows exponentially with the number of agents, and double-exponentially with the horizon. Specifically, this is because in POSG, different agents have different observations, which leads to different beliefs over the state. In fact, it has been show that the optimal strategy of a single-agent in POSG relies on the belief not only over the state, but also over the strategies of the opponents \citep{hansen2004dynamic}.  An alternative  solution is to enable each agent to have access to the \emph{perfect observations} of all other agents, so that each agent will main identical belief over the state, which reduces the multi-agent decision making to a single-agent one (but each still needs to solve a game even with such perfect information). Nonetheless, such an approach requires  unlimited bandwidth as well as  instantaneous and noiseless 
+communication between agents, which is impractical for real systems like DeepRacer, especially in the racing setting where all agents are competing instead of cooperating and may not have the motivation to share such information. 
+
+To tackle   such challenges, we propose two potential solutions that are practical, considering the current software and hardware assets we have on DeepRacer, as to be introduced below. 
+
+
+\subsubsection{The Use of \emph{God Camera}: Remove Partial Observability}
+
+The first solution is to use the so-called \emph{God Camera}, which can be  mounted on the ceiling of the racing room and can observe the position of all cars. This is easy to implement and is viable hardware-wise, especially with the aid of the \emph{DeepLense} sensor from Amazon. All cars can have access to the image stream collected from the God Camera, which brings back the problem to the fully observed setting, with the God Camera image being the state. This is also relatively easy to implement in the simulation, by simply adding a camera stream fed to all agents in Gazebo. This minor change of  hardware  greatly simplifies the problem, so that we can  test some computationally feasible MARL  algorithms developed for the fully observed setting, for example, minimax-Q learning \citep{littman1994markov}, policy gradient for zero-sum Markov games  \citep{pinto2017robust}.
+
+
+Due to its easiness to implement, we can use this solution as the baseline environment for testing MARL algorithms. 
+ Additionally, we note that the use of this God Camera may help improve the performance 	of single-car racing as well. 
+  
+  
+  
+\subsubsection{Centralized Training \& Decentralized Execution} 
+
+
+The second solution is to use the idea of \emph{Centralized Training \& Decentralized Execution} originated from \cite{foerster2016learning,lowe2017multi}. Specifically, during training which is conducted in simulations for DeepRacer, extra information, for example, observations and actions of other agents, can be used  to ease the training. While during execution, these pieces of information are not available and only local observations can be used as input to the policy. 
+Notationally, the Q-value function at each agent $i$ is heuristically approximated by $Q^i(o^1,\cdots,o^N,a^1,\cdots,a^N)$, i.e., a function of joint observation $o=(o^1,\cdots,o^N)$ and joint action $a=(a^1,\cdots,a^N)$, so is the value function $V^i(o^1,\cdots,o^N)$. In contrast, the policy at each agent $i$ is \emph{local} in the sense that it only takes $o^i$ as input, i.e., $\pi^i(a^i\given o^i)$.
+
+In this setting, it is unnatural to develop Q-learning or other value-based RL algorithms, since in general Q-function cannot contain different information at training and testing time \citep{lowe2017multi}.  
+  Hence, actor-critic/policy-gradient methods become feasible choices, since it is the critic that uses other agents' information, and   as long as the actor is trained to use only local observations as input,  it will remain  decentralized during testing. 
+  After testing MARL algorithms using the first solution setup, we can switch to this setup and compare the performance with the baseline above.   
+  
+  
+
+

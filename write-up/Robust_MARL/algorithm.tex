@@ -1,0 +1,280 @@
+
+
+\section{Algorithms}\label{sec:alg}
+
+To find the Markov perfect Nash equilibrium defined in Definition \ref{def:robust_NE}, or equivalently in Definition \ref{def:robust_NNE}, one  has to solve the Bellman-type equation   for the robust Markov game in \eqref{equ:Bellman_Robust_MARL_reward_0}, or \eqref{equ:Bellman_Robust_MARL_reward}. To this end, we first develop a value iteration algorithm, when the model is known to the agents. Based on this model-based algorithm, we propose a model-free Q-learning algorithm with convergence guarantees. In addition, viewing the nature as another agent, we also develop multi-agent policy gradient methods with function approximation. 
+
+
+\subsection{Value Iteration for Robust Markov Games}\label{sec:VI_Robust_MG}
+By Bellman equation  \eqref{equ:Bellman_Robust_MARL_reward_0}, one straightforward approach is to develop  \emph{value iteration} (VI) algorithms when the model on $\bar{\cG}$ is known. In particular, the goal is to  learn a value function $\oV$ by updating the Bellman equation \eqref{equ:Bellman_Robust_MARL_reward_0}:
+\#\label{equ:VI_Robust_MG}
+\oV^i_{t+1}(s)
+&=\max_{\pi^i(\cdot\given s)}~\min_{\oR^i_s\in\ocR_s}~ \sum_{a\in\cA} \prod_{j=1}^N\pi^j(a^j\given s)\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}P(s'\given s,a)\oV^i_{t}(s')\bigg)\notag\\
+&=:\cT^i_{\cV}(\oV^i_t)
+\#
+As a result, the desired value function $\oV^i$ is a fixed-point of the operator $\cT^i_{\cV}(\cdot):\RR^{|\cS|}\to \RR^{|\cS|}$. 
+%In order to show the convergence of \eqref{equ:VI_Robust_MG}, it suffices to show that $\cT^i_{\cV}(\cdot)$ is a contraction mapping. 
+%\issue{XXXX TO BE SHOWN XXXX}
+
+
+
+\subsection{Q-Learning for Robust MARL}\label{sec:Q_learning_Robust_MARL}
+
+Building upon the VI update in \eqref{equ:VI_Robust_MG}, one can develop Q-learning-based algorithms. In particular, the optimal action-value function, i.e., optimal  Q-value function, of robust Markov games can be written as a function of state, joint action, and reward, which satisfies the following Bellman equation 
+\#\label{equ:Q_Bellman}
+\oQ_*^i\big(s,a,\oR^i(s,a)\big):=\oR^i(s,a)
+%\sum_{\oR^i_s\in \ocR^i_s}\pi^0_*\big(\oR^i_s\biggiven i, s\big)\oR^i(s,a)
++\gamma \sum_{s'\in\cS}P(s'\given s,a)\sum_{a'}\prod_{j=1}^N\pi^j_*(a'^j\given s')\oQ_*^i\big(s',a',\oR^i_*(s',a')\big)
+%\max_{\pi^i(\cdot\given s)}~\min_{\oR^i_s\in\ocR_s}~ \sum_{a\in\cA} \prod_{j=1}^N\pi^j(a^j\given s)\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}P(s'\given s,a)\oV^i(s')\bigg)\notag\\ 
+\#
+where recall that $a=(a^1,\cdots,a^N)$ and $a'=(a'^1,\cdots,a'^N)$, 
+%$\oR^i_s=[\oR^i(s,a)]_{a\in\cA}^\top$, 
+$\pi^j_*$ is the policy of agent $j$ at the equilibrium, and 
+%$\pi^{0,i}_*(s)[a]$ 
+$\oR^i_*(s',a')$ 
+is the $a$-th element of $\oR^i_{*,s'}=\pi^{0,i}_*(s')$, the 
+output of the nature's deterministic policy  at the equilibrium. 
+%Note that . 
+%Also n
+Note that different from the standard Bellman equation for single-agent Q-value function, the equilibrium policy $\pi_*$ cannot be obtained just from $\bar{Q}^i$ (which is just the greedy policy for the single-agent setting). In fact, the Q-values of all other agents are also required to determine the equilibrium policy $\pi_*$. This is actually the most challenging part in  developing multi-agent Q-learning algorithms in general \citep{hu2003nash} (not just in our robust setting). 
+%\issue{XXXXXX}
+
+As a consequence, the tabular-setting Q-learning update can be written as
+\small
+\#\label{equ:Q_learning_Robust_MG}
+&\oQ^i_{t+1}(s_t,a_t,\oR^i_t):=(1-\alpha_t)\cdot\oQ^i_{t}(s_t,a_t,\oR^i_t)+\alpha_t\cdot\big[\oR^i_t+\gamma \sum_{a_{t+1}}\pi_{*,t}(a_{t+1}\given s_{t+1})\oQ^i_t(s_{t+1},a_{t+1},\oR^i_{t+1})\big],\notag\\
+&\quad\text{with~~}\oR^i_{t}=\pi^{0,i}_{*,t}(s_{t})[a_{t}],~~a^{i}_{t}\sim \pi^i_{*,t}(\cdot\given  s_{t}),~~\oR^i_{t+1}=\pi^{0,i}_{*,t}(s_{t+1})[a_{t+1}]
+\#
+\normalsize 
+where $\pi^{0}_{*,t}=\big\{\pi^{0,i}_{*,t}\big\}_{i\in\cN}$ and $\pi_{*,t}=\prod_{j=1}^N\pi^j_{*,t}$  denote the equilibrium policies of the nature and the equilibrium joint   policies of all agents, respectively; the formula $\pi^{0,i}_{*,t}(s)[a]$ denotes the $a$-th element of the output of the policy $\pi^{0,i}_{*,t}(s)$. 
+The equilibrium policies are obtained based on the Q-value estimate $\oQ_t=(\oQ_t^1,\cdots,\oQ_t^N)$ at iteration $t$, by solving the following equations:
+\$
+	\big(\pi^i_{*,t}(\cdot\given s),\pi^{0,i}_{*,t}(s)\big)\in\argmaxmin_{\pi^i(\cdot\given s),\pi^{0,i}(s)}~&
+%	\sum_{\oR^i_s\in \ocR^i_s}
+	\sum_{a\in\cA} \pi^i(a^i\given s)\prod_{j\neq i}\pi^j_*(a^j\given s)\oQ^i_{t}\big(s,a,\pi^{0,i}(s)[a]\big),
+	\$
+	where $\oR^i(s,a)$ is the $a$-th element of the vector $\oR^i_s$. 
+ Note that this update \eqref{equ:Q_learning_Robust_MG} needs to maintain the Q-value update of all agents, i.e., $\oQ^i_t$ for all agents, increases the complexity of the algorithm.  This is inevitable for value-based RL for general-sum Markov games, and the same issue also occurs in the design of Nash-Q learning \citep{hu2003nash}.  Another issue is that it is not clear how to obtain the equilibrium policy $\pi^i_{*,t}$ using $\oQ_t$, even in the simplest zero-sum case. {In particular, this  follows from the fact that for standard Markov games (without robustness concern), such an equilibrium policy $\pi^i_{*,t}(\cdot\given s)$ at time $t$ can be obtained by solving a linear program that solves for the Nash equilibrium of the matrix game with payoff matrix $\big(\oQ^1_t(\cdot\given s_{t+1}),\cdots,\oQ^N_t(\cdot\given s_{t+1})\big)$ \citep{hu2003nash}. This can be further simplified by solving a minimax problem using linear programming in the zero-sum setting. 
+ However, it is not clear how to obtain the nature's equilibrium policy $\pi^0_*$ without without knowing the model $P$, which is required in solving \eqref{equ:Q_Bellman}}. Zero-sum assumption on the reward function also does not simplify the problem, since the nature always plays against each player, which makes this three-player game non-zero sum. 
+% \issue{XXXX TO BE SHOWN XXXX}
+
+\subsubsection{Convergence Results}
+We now establish the convergence of the  proposed Q-learning update \eqref{equ:Q_learning_Robust_MG}, under certain conditions as in Nash-Q learning \citep{hu2003nash}. 
+To simplify the notation, we consider the setting with two agents without loss of generality. The following standard assumptions on the exploration and learning rate for RL are made.
+
+\begin{assumption}\label{assump:visit}
+	Every state and action have been visited infinitely often.
+\end{assumption}
+
+\begin{assumption}\label{assump:stepsize}
+	The learning rate $\alpha_t$ satisfies the following conditions:
+	\begin{itemize}
+		\item $0\leq \alpha_t< 1$, $\sum_{t\geq 0}\alpha_t=\infty$, and $\sum_{t\geq 0}\alpha_t^2<\infty$,
+		\item $\alpha_t(s,a^1,a^2,\oR^i(s,a))=0$ if $(s,a^1,a^2,\oR^i(s,a))\neq (s_t,a^1_t,a^2_t,\oR^i_t)$.
+	\end{itemize}
+\end{assumption}
+
+We also make the following assumption on the structure of the game, as in Nash-Q learning \citep{hu2003nash}.
+
+\begin{assumption}\label{assump:equi_point}
+Define $\oQ^i_t(s)=[\oQ^i_t(s,a^1,a^2,\oR^i(s,a))]_{a^1\in\cA^1,a^2\in\cA^2,\oR^i_s\in\ocR^i_s}$ to be the estimates of Q-value functions at iteration $t$ of \eqref{equ:Q_learning_Robust_MG}, and define the \emph{stage} robust Markov perfect Nash equilibrium for  $(\oQ^1_t(s),\oQ^2_t(s))$  as the tuple of policies  $\big(\{\pi^{0,i}_*(s)\}_{i\in[N]},\pi^1_*(\cdot\given s), \pi^2_*(\cdot\given s)\big)$ that is obtained from
+\#\label{equ:def_stage_RMPNE}
+\big(\pi^i_{*}(\cdot\given s),\pi^{0,i}_{*}(s)\big)\in\argmaxmin_{\pi^i(\cdot\given s),\pi^{0,i}(s)}~&
+%	\sum_{\oR^i_s\in \ocR^i_s}
+	\sum_{a\in\cA} \pi^i(a^i\given s)\pi^{-i}_*(a^{-i}\given s)\oQ^i_t\big(s,a,\pi^{0,i}(s)[a]\big),
+\# 
+where $-i=1$ if $i=2$, and $-i=2$ if $i=1$. 
+Then the stage equilibrium policy tuple   satisfies one of the following properties:
+\begin{itemize}
+	\item The equilibrium policy tuple is global optimum, i.e., for any ${\pi}^i(\cdot\given s)\in\Delta(\cA^i)$ with $i=1,2$  and $\pi^{0,i}(s)\in \ocR^i_s$,
+	\small
+	\$
+	\sum_{a\in\cA} \pi^i_*(a^i\given s)\pi^{-i}_*(a^{-i}\given s)\oQ^i_t\big(s,a,\pi^{0,i}_*(s)[a]\big)\geq \sum_{a\in\cA} \pi^i(a^i\given s)\pi^{-i}(a^{-i}\given s)\oQ^i_t\big(s,a,\pi^{0,i}(s)[a]\big).
+	\$
+	\normalsize
+	\item One agent receives a higher payoff when the other agent deviates from the equilibrium policy tuple, i.e., for any ${\pi}^i(\cdot\given s)\in\Delta(\cA^i)$  and $\pi^{0,i}(s)\in \ocR^i_s$ with $i=1,2$
+	\small
+	\$
+	&\sum_{a\in\cA} \pi^1_*(a^1\given s)\pi^{2}_*(a^{2}\given s)\oQ^1_t\big(s,a,\pi^{0,1}(s)[a]\big)\leq \sum_{a\in\cA} \pi^1_*(a^1\given s)\pi^{2}(a^{2}\given s)\oQ^1_t\big(s,a,\pi^{0,1}(s)[a]\big)\\ 
+	&\sum_{a\in\cA} \pi^2_*(a^2\given s)\pi^{1}_*(a^{1}\given s)\oQ^2_t\big(s,a,\pi^{0,2}(s)[a]\big)\leq \sum_{a\in\cA} \pi^2_*(a^2\given s)\pi^{1}(a^{1}\given s)\oQ^2_t\big(s,a,\pi^{0,2}(s)[a]\big). 
+	\$
+	\normalsize
+\end{itemize}
+\end{assumption}
+
+With Assumptions \ref{assump:visit}-\ref{assump:equi_point} in mind, we establish the convergence of Q-learning in the following theorem. 
+
+\begin{theorem}\label{thm:conv_Q}
+Under Assumptions \ref{assump:visit}-\ref{assump:equi_point}, the sequence $\{(\oQ^1_t,\oQ^2_t)\}$ obtained from \eqref{equ:Q_learning_Robust_MG} converges to $(\oQ^1_*,\oQ^2_*)$, which are the optimal Q-value functions that solve  the Bellman equation \eqref{equ:Q_Bellman}, namely, the robust Markov perfect Nash equilibrium Q-value.
+\end{theorem}
+\begin{proof}
+	Define the operator 
+ 	\#\label{equ:def_P_i}
+	\cP^i_t\oQ^i(s)=\oR^i_t+\gamma \sum_{a\in\cA} \pi^i_*(a^i\given s)\pi^{-i}_*(a^{-i}\given s)\oQ^i\big(s,a,\pi^{0,i}_*(s)[a]\big),
+	\#
+	for $i=1,2$, where $\big(\{\pi^{0,i}_*(s)\}_{i=1,2},\pi^1_*(\cdot\given s), \pi^2_*(\cdot\given s)\big)$ is the tuple of equilibrium policies for $(\oQ^1(s),\oQ^2(s))$ obtained from \eqref{equ:def_stage_RMPNE}. We first show that $\cP_t=(\cP^1_t,\cP^2_t)$ is a contraction mapping. 
+	
+	\begin{lemma}\label{lemma:contraction}
+		Let $\cP_t=(\cP^1_t,\cP^2_t)$ where $\cP^i_t$ is as defined in \eqref{equ:def_P_i}, then $\cP_t$ is a contraction mapping under Assumption \ref{assump:equi_point}.
+	\end{lemma}
+	\begin{proof}
+	Consider two pairs of Q-values at state $s$ denoted by $(\oQ^1(s),\oQ^2(s))$ and $(\hQ^1(s),\hQ^2(s))$, respectively, 
+	whose equilibrium tuples are denoted  by 
+	\$
+	\big(\{\pi^{0,i}_*(s)\}_{i=1,2},\pi^1_*(\cdot\given s), \pi^2_*(\cdot\given s)\big), ~~~\text{and}~~~\big(\{\hpi^{0,i}_*(s)\}_{i=1,2},\hpi^1_*(\cdot\given s), \hpi^2_*(\cdot\given s)\big).
+	\$
+	 To show the contraction property, we consider the following  two cases. 
+	\\
+	\vspace{-5pt}
+	\\
+	\noindent \textbf{Case $1$:} $\cP^i_t\oQ^i(s)\geq \cP^i_t\hQ^i(s)$. Then under the first property of Assumption \ref{assump:equi_point},  i.e., the global optimality of the equilibrium, we have
+	\small
+	\#
+	&0\leq \cP^1_t\oQ^1(s)-\cP^1_t\hQ^1(s)\notag\\
+	&=\gamma \bigg[\sum_{a\in\cA} \pi^i_*(a^i\given s)\pi^{-i}_*(a^{-i}\given s)\oQ^i\big(s,a,\pi^{0,i}_*(s)[a]\big)-\sum_{a\in\cA} \hpi^i_*(a^i\given s)\hpi^{-i}_*(a^{-i}\given s)\hQ^i\big(s,a,\hpi^{0,i}_*(s)[a]\big)\bigg]\notag\\
+	&\leq \gamma \bigg[\sum_{a\in\cA} \pi^i_*(a^i\given s)\pi^{-i}_*(a^{-i}\given s)\oQ^i\big(s,a,\pi^{0,i}_*(s)[a]\big)-\sum_{a\in\cA} \pi^i_*(a^i\given s)\pi^{-i}_*(a^{-i}\given s)\hQ^i\big(s,a,\pi^{0,i}_*(s)[a]\big)\bigg]\notag\\
+	&\leq \gamma \max_{a^1,a^2,\oR^i_s}~~\big|\oQ^i(s,a^1,a^2,\oR^i(s,a))-\hQ^i(s,a^1,a^2,\oR^i(s,a))\big|=\gamma \|\oQ^i(s)-\hQ^i(s)\|_{\infty},\label{equ:case1_1}
+	\#
+	\normalsize 
+	where the second inequality uses this property. 
+	Furthermore, under the second property of Assumption \ref{assump:equi_point}, we can derive 
+	\small
+	\#
+	&0\leq \cP^1_t\oQ^1(s)-\cP^1_t\hQ^1(s)\notag\\
+	&=\gamma \bigg[\sum_{a\in\cA} \pi^i_*(a^i\given s)\pi^{-i}_*(a^{-i}\given s)\oQ^i\big(s,a,\pi^{0,i}_*(s)[a]\big)-\sum_{a\in\cA} \hpi^i_*(a^i\given s)\hpi^{-i}_*(a^{-i}\given s)\hQ^i\big(s,a,\hpi^{0,i}_*(s)[a]\big)\bigg]\notag\\
+	&\leq \gamma \bigg[\sum_{a\in\cA} \pi^i_*(a^i\given s)\pi^{-i}_*(a^{-i}\given s)\oQ^i\big(s,a,\pi^{0,i}_*(s)[a]\big)-\sum_{a\in\cA} \pi^i_*(a^i\given s)\hpi^{-i}_*(a^{-i}\given s)\hQ^i\big(s,a,\pi'^{0,i}_*(s)[a]\big)\bigg]\notag\\
+	&\leq \gamma \bigg[\sum_{a\in\cA} \pi^i_*(a^i\given s)\pi^{-i}_*(a^{-i}\given s)\oQ^i\big(s,a,\pi'^{0,i}_*(s)[a]\big)-\sum_{a\in\cA} \pi^i_*(a^i\given s)\hpi^{-i}_*(a^{-i}\given s)\hQ^i\big(s,a,\pi'^{0,i}_{*}(s)[a]\big)\bigg]\notag\\
+	&\leq \gamma \bigg[\sum_{a\in\cA} \pi^i_*(a^i\given s)\hpi^{-i}_*(a^{-i}\given s)\oQ^i\big(s,a,\pi'^{0,i}_*(s)[a]\big)-\sum_{a\in\cA} \pi^i_*(a^i\given s)\hpi^{-i}_*(a^{-i}\given s)\hQ^i\big(s,a,\pi'^{0,i}_{*}(s)[a]\big)\bigg]\notag\\
+	&\leq \gamma \|\oQ^i(s)-\hQ^i(s)\|_{\infty}\label{equ:case1_2}
+	\#
+	\normalsize
+	where the second inequality uses the definition of the equilibrium, with 
+	$\pi'^{0,i}_*(s)$ denoting the minimizer of $\hQ^i(s)$ corresponding to $\pi^i_*$; the third inequality is due to that for fixed $\pi^1_*(\cdot\given s)$ and $\pi^2_*(\cdot\given s)$, $\pi^{0,i}_*(s)$ is the minimizer; the fourth inequality uses the second property of Assumption \ref{assump:equi_point}; the last inequality follows by the definition of $\|\cdot\|_\infty$-norm. Both \eqref{equ:case1_1} and \eqref{equ:case1_2} lead to a $\gamma$-contraction in $\|\cdot\|_\infty$ norm. 
+	\\
+	\vspace{-5pt}
+	\\
+	\noindent \textbf{Case $2$:} $\cP^i_t\oQ^i(s)\leq \cP^i_t\hQ^i(s)$. Similar arguments apply for this case, which are omitted here for brevity.
+	
+	Note that for both cases, the $\gamma$-contraction result holds for any $s\in\cS$, which completes the proof. 
+	\end{proof}
+	
+	Let $\oQ^i=[\oQ^i(s)]_{s\in\cS}$ for any $\oQ^i$. Then Lemma \ref{lemma:contraction} means that $\|\cP^i_t\oQ^i-\cP^i_t\oQ^i_*\|_{\infty}\leq \gamma\|\oQ^i-\oQ^i_*\|_{\infty}$ for any $\oQ^i$. In sum, the operator $\cP_t$ satisfies both conditions: i) it is a contraction mapping; ii) $\oQ^i_*$ is a fixed point of $\oQ^i_*=\EE(\cP^i_t \oQ^i_*)$ for both $i=1,2$. By Lemma $8$ in \cite{hu2003nash} (also Corollary $5$ in \cite{szepesvari1999unified}), we know that $\{(\oQ^1_t,\oQ^2_t)\}$ converges to $\{(\oQ^1_*,\oQ^2_*)\}$, which concludes the proof. 
+\end{proof}
+
+ 
+Theorem \ref{thm:conv_Q} lays theoretical foundations for the convergence  of the Q-learning update. The convergence to the Q-values at the equilibrium further proves the convergence to the equilibrium policies. Nonetheless, as admitted in \cite{hu2003nash}, Assumption \ref{assump:equi_point} is hard to verify in general. On the other hand, \cite{hu2003nash} also noted that in simulations, such an assumption is not essential for the Q-learning update to converge. It is thus interesting and imperative to corroborate this in our setting, too. In addition, we note that the proof of Theorem \ref{thm:conv_Q} can be generalized to more than two agents, provided that the second property in Assumption \ref{assump:equi_point} is replaced by a saddle-point condition as Assumption $3$ in \cite{hu2003nash}. 
+
+\subsection{Policy Gradient/Actor-Critic for Robust MARL}\label{sec:PG_Robust_MARL}
+
+The challenge in developing value-based RL algorithm motivates us to consider policy gradient/actor-critic-based methods. In particular, each agent $i$'s policy $\pi^i$ is parameterized as\footnote{For notational simplicity, we omit the superscript $i$ since the index $i$ can be identified by the parameter used.} $\pi_{\theta^i}$ for $i=1,\cdots,N$, and the nature's policy is parameterized by a set of policies $\pi_{\theta^0}:=\{\pi_{\theta^{0,i}}\}_{i\in\cN}$. Also, we define the return objective of each agent $i$ under the joint policy $\tilde\pi_{\theta}:=(\pi_{\theta^0},\pi_{\theta^1},\cdots,\pi_{\theta^N})$ as $J^i(\theta):=\oV^i_{\tilde{\pi}_{\theta}}(s_0)$, where $s_0$ denotes the initial state\footnote{Note that the derivation below can be easily generalized to the setting that the initial state is randomly drawn from some distribution.}, $\theta=(\theta^0,\theta^1,\cdots,\theta^N)$ is the concatenation of all policy parameters with $\theta^0=(\theta^{0,1},\cdots,\theta^{0,N})$, and $\oV^i_{\tilde{\pi}_{\theta}}$ is the \emph{value function} under joint policy $\tilde{\pi}_\theta$ that satisfies 
+\#\label{equ:def_V_under_pi}
+&\oV^i_{\tilde{\pi}_{\theta}}(s)=\sum_{a\in\cA} \prod_{j=1}^N\pi_{\theta^j}(a^j\given s)\bigg(\pi_{\theta^{0,i}}(s)[a]+\gamma \sum_{s'\in\cS}P(s'\given s,a)\oV^i_{\tilde{\pi}_{\theta}}(s')\bigg). 
+\# 
+$\pi_{\theta^{0,i}}(s)[a]$ is the $a$-th  element of the output vector $\pi_{\theta^{0,i}}(s)$.  
+Moreover, we also similarly define the Q-value under joint policy $\tilde{\pi}_\theta$ to be the one that satisfies 
+\#\label{equ:def_Q_under_pi}
+\oQ^i_{\tilde{\pi}_\theta}(s,a)=\pi_{\theta^0}(s)[a]
+%\sum_{\oR^i_s\in \ocR^i_s}\pi^0_*\big(\oR^i_s\biggiven i, s\big)\oR^i(s,a)
++\gamma \sum_{s'\in\cS}P(s'\given s,a)\sum_{a'\in\cA}\prod_{j=1}^N\pi_{\theta^j}(a'^j\given s')\oQ^i_{\tilde{\pi}_\theta}(s',a'). 
+\#
+
+We first establish the policy gradient with respect to the parameter $\theta$ in the following lemma. 
+ 
+
+\begin{lemma}\label{lemma:PG_theta}
+For each agent $i=1,\cdots,N$, the policy gradient of the objective $J^i(\theta)$ with respect to the parameter $\theta$ has the following form\footnote{For notational simplicity, we omit the parameter that some function takes gradient with respect to, if the function takes  gradient with respect to the full parameter, e.g., we write $\nabla_{\theta^{0,i}}\pi_{\theta^{0,i}}(s)[a]$ as $\nabla\pi_{\theta^{0,i}}(s)[a]$, $\nabla_{\theta^{i}}\log\pi_{\theta^i}(a^i\given s)$ as $\nabla\log\pi_{\theta^i}(a^i\given s)$. }:
+\#
+\nabla_{\theta^i} J^i(\theta)&=\EE_{s\sim\rho^{s_0}_{\tilde{\pi}_\theta},a\sim{\pi}_{\theta}(\cdot\given s)}\big[\nabla\log\pi_{\theta^i}(a^i\given s)\cdot\oQ^i_{\tilde{\pi}_\theta}(s,a)\big],\label{equ:PG_theta_1}\\
+\nabla_{\theta^{0,i}} J^i(\theta)&=\EE_{s\sim\rho^{s_0}_{\tilde{\pi}_\theta},a\sim{\pi}_{\theta}(\cdot\given s)}\big[\nabla\pi_{\theta^{0,i}}(s)[a]\big],\label{equ:PG_theta_2}
+\#
+%for all $i=1,\cdots,N$, 
+where $\pi_\theta(a\given s):=\prod_{j=1}^N\pi_{\theta^j}(a^j\given s)$, 
+%recall that $\pi_\theta=\big(\pi^1_{\theta^1},\cdots,\pi^N_{\theta^N}\big)$, and 
+$
+\rho^{s_0}_{\tilde{\pi}_\theta}:=\sum_{t=0}^\infty \gamma^tPr(s\to s',t,{\pi}_\theta)
+$ is the discounted ergodic state distribution under joint policy $\tilde{\pi}_\theta$ with state starting from $s_0$, $Pr(s\to s',t,{\pi}_\theta)$  denotes the probability of transitioning from $s$ to $s'$ under joint policy $\pi_\theta$ with $t$-steps, and $\pi_{\theta^{0,i}}(s)[a]$ is the $a$-th element of the output of $\pi_{\theta^{0,i}}(s)$.
+\end{lemma}
+
+\begin{proof}
+%	The gradient with respect to  $\theta^j$ for $j=1,\cdots,N$ follows \eqref{equ:PG_theta_1}, s
+	Note that $J^i(\theta)$ can be viewed as the normal value in Markov games with reward function $R^i(s,a)=\pi_{\theta^{0,i}}(s)[a]$. Thus, the form of  \eqref{equ:PG_theta_1} follows by the derivation in either \cite[Eq. $(4)$]{lowe2017multi} or \cite[Theorem $3.1$]{zhang2018fully}. 
+	
+	Moreover,  taking gradient with respect to $\theta^{0,i}$ on both sides of \eqref{equ:def_V_under_pi} yields
+	\#\label{equ:proof_trash_1}
+	&\nabla_{\theta^{0,i}}\oV^i_{\tilde{\pi}_{\theta}}(s)=\sum_{a\in\cA} \pi_\theta(a\given s)\bigg(\nabla\pi_{\theta^{0,i}}(s)[a]+\gamma \sum_{s'\in\cS}P(s'\given s,a)\cdot\nabla_{\theta^{0,i}}\oV^i_{\tilde{\pi}_{\theta}}(s')\bigg)\notag\\
+	&\quad=\sum_{a\in\cA} \pi_\theta(a\given s)\bigg[\nabla\pi_{\theta^{0,i}}(s)[a]+\gamma \sum_{s'\in\cS}P(s'\given s,a)\cdot\sum_{a'\in\cA}\pi_\theta(a'\given s')\notag\\
+	&\qquad \qquad\bigg(\nabla\pi_{\theta^{0,i}}(s')[a']+\gamma \sum_{s''\in\cS}P(s''\given s',a')\cdot\nabla_{\theta^{0,i}}\oV^i_{\tilde{\pi}_{\theta}}(s'')\bigg)\bigg]\notag\\
+	&\quad=\EE_{a\sim\pi_\theta(\cdot\given s)}\big[\nabla\pi_{\theta^{0,i}}(s)[a]\big]+\gamma \sum_{s'\in\cS}Pr(s\to s',1,{\pi}_\theta) \EE_{a'\sim\pi_\theta(\cdot\given s')}\big[\nabla\pi_{\theta^{0,i}}(s')[a']\big] \notag\\
+	&\qquad \qquad+\gamma^2 \sum_{s''\in\cS}Pr(s\to s'',2,{\pi}_\theta)\cdot\nabla_{\theta^{0,i}}\oV^i_{\tilde{\pi}_{\theta}}(s''),
+%	XXX\bigg[\gamma \sum_{s'\in\cS}P(s'\given s,a)\cdot\sum_{a'\in\cA}\pi_\theta(a'\given s')\\
+%	&\qquad \qquad\bigg(\nabla_{\theta^{0,i}}\pi^0_{\theta^{0,i}}(i,s')(a')+\gamma \sum_{s''\in\cS}P(s''\given s',a')\cdot\nabla_{\theta^{0,i}}\oV^i_{\tilde{\pi}_{\theta}}(s'')\bigg)\bigg]
+	\#
+	where the second equation follows by unrolling $\nabla_{\theta^{0,i}}\oV^i_{\tilde{\pi}_{\theta}}(s')$. 	By keeping unrolling \eqref{equ:proof_trash_1}, we further have
+	\#
+	\nabla_{\theta^{0,i}}\oV^i_{\tilde{\pi}_{\theta}}(s)&=\sum_{s'\in\cS}\sum_{t=0}^\infty \gamma^tPr(s\to s',t,{\pi}_\theta)\cdot
+	\EE_{a'\sim\pi_\theta(\cdot\given s')}\big[\nabla\pi_{\theta^{0,i}}(s')[a']\big]\notag\\
+	&=\sum_{s'\in\cS}\rho^{s}_{\tilde{\pi}_\theta}(s')\cdot
+	\EE_{a'\sim\pi_\theta(\cdot\given s')}\big[\nabla\pi_{\theta^{0,i}}(s')[a']\big],\label{equ:proof_trash_2}
+%	XXX\bigg[\gamma \sum_{s'\in\cS}P(s'\given s,a)\cdot\sum_{a'\in\cA}\pi_\theta(a'\given s')\\
+%	&\qquad \qquad\bigg(\nabla_{\theta^0}\pi^0_{\theta^0}(i,s')(a')+\gamma \sum_{s''\in\cS}P(s''\given s',a')\cdot\nabla_{\theta^0}\oV^i_{\tilde{\pi}_{\theta}}(s'')\bigg)\bigg]
+	\#
+	which implies the formula in \eqref{equ:PG_theta_2} and completes the proof. 
+\end{proof}
+
+Lemma \ref{lemma:PG_theta} lays foundations for developing policy gradient methods for each agent $i$. In particular, if the robust Q-value function $\oQ^i_{\tilde{\pi}_\theta}$ is also parameterized as $\oQ_{\omega^i}:\cS\times\cA\to \RR$ by some parameter $\omega^i\in\RR^d$. Then, temporal difference (TD) learning algorithm can be applied to perform policy evaluation, i.e., the critic update. This gives us the online actor-critic algorithm as follows:
+\#
+\delta^i_t&=\pi_{\theta^{0,i}_t}(s_t)[a_t]+\gamma \oQ_{\omega^i_t}(s_{t+1},a_{t+1})-\oQ_{\omega^i_t}(s_{t},a_{t})\\
+\omega^i_{t+1}&=\omega^i_{t}+\alpha_t\cdot \delta^i_t\cdot \nabla\oQ_{\omega^i_t}(s_{t},a_{t})
+\label{equ:online_AC_C}\\
+\theta^i_{t+1}&=\theta^i_{t}+\beta_t \cdot \nabla\log\pi_{\theta^i_t}(a^i_t\given s_t)\cdot\oQ_{\omega^i_t}(s_t,a_t)\label{equ:online_AC_A1}\\
+\theta^{0,i}_{t+1}&=\theta^{0,i}_{t}-\beta_t \cdot \nabla\pi_{\theta^{0,i}_t}(s_t)[a_t]\label{equ:online_AC_A2},
+\#
+where $\delta^i_t$ is the TD error for agent $i$, $\alpha_t,\beta_t>0$ are both stepsizes that may diminish over time, i.e., $\lim_{t\to\infty}\alpha_t=\lim_{t\to\infty}\beta_t=0$, and also satisfies:
+\$
+\sum_{t\geq 0} \alpha_t^2<\infty,\quad \sum_{t\geq 0} \beta_t^2<\infty,\qquad\sum_{t\geq 0} \alpha_t=\sum_{t\geq 0} \beta_t=\infty. 
+\$
+ Moreover, usually $\alpha_t$ is larger than $\beta_t$ as $t\to\infty$, i.e., $\lim_{t\to\infty}\beta_t/\alpha_t=0$, in order to ensure  that the  critic step performs faster than the actor step. This is also known as a \emph{two-timescale} update. 
+
+In practice, both critic and actor can be updated in a mini-batch fashion. See Algorithm \ref{alg:batch_AC} for the details. Note that the minimization in line $11$ in Algorithm \ref{alg:batch_AC}  can be solved by any nonconvex optimization solvers, or by just several iterations of gradient steps w.r.t. $\omega^i$.  
+
+
+%\#
+%\nabla_{\theta^i} J^i(\theta)&=\EE\big[\nabla\log\pi^i_{\theta^i}(a^i\given s)\cdot Q^i_{{\pi}_\theta}(s,a^1,\cdots,a^N)\big]\\
+%Q^i_{\pi_\theta}(\cdot,\cdot)=Q^i_{\pi_\theta}(\cdot,\cdot;\omega^i),\quad \pi^i\to\pi_{\theta^i}^i
+%\#
+
+
+\begin{algorithm}[thpb]
+	\caption{\textbf{Actor-Critic for Robust Multi-Agent RL:} } 
+	\label{alg:batch_AC}
+	\begin{algorithmic}[1] 
+		\STATE Initialization of Q-value parameters $\{\omega^i_0\}_{i\in\cN}$, and policy parameters $\{\theta^i_0\}_{i\in\cN}$ and $\theta^0_0:=\{\theta^{0,i}_0\}_{i\in\cN}$.  
+%		\INPUT stuff
+		\FOR{episode $=1$ to $M$}
+		\STATE Receive an initial state $s$ 
+		\FOR{$t = 1, \cdots T$}
+		\STATE For each agent $i$, sample action $a^i\sim \pi_{\theta^i_t}$ with current policy $ \pi_{\theta^i_t}$
+		\STATE Execute joint $a=(a^1,\cdots,a^N)$, and observe 
+%		reward $r$ and 
+		new state $s'$
+		\STATE Store $(s,a,s')$ in replay buffer $\cD$, let $s'\leftarrow s$
+		\FOR{agent $i=1$ to $N$}
+		\STATE Sample a random mini-batch of $S$ samples of $(s_t,a_t,s_{t+1})$ from $\cD$
+		\STATE Set  
+		\$
+		y_t=\pi_{\theta^{0,i}}(s_t)[a_t]+\gamma \oQ_{\omega^i}(s_{t+1},a^1_{t+1},\cdots,a^N_{t+1})\biggiven_{a^i_{t+1}\sim\pi_{\theta^i}(\cdot\given s_{t+1})},
+		\$
+		\STATE Update critic by minimizing the loss $\cL(\theta^i)=\frac{1}{S}\sum_{t=1}^S\big(y_t-\oQ_{\omega^i}(s_{t},a_{t})\big)^2$
+		\STATE Update actor using the sampled policy gradient
+		\$
+		\nabla_{\theta^i} J^i(\theta)&\approx\frac{1}{S}\sum_{t=1}^S\nabla\log\pi_{\theta^i}(a^i_t\given s_t)\oQ^i_{\tilde{\pi}_\theta}(s_t,a_t),~ 
+		\theta'^i =(1-\tau) \theta^i+\tau\nabla_{\theta^i} J^i(\theta)\\
+		\nabla_{\theta^{0,i}} J^i(\theta)&\approx\frac{1}{S}\sum_{t=1}^S\nabla\pi_{\theta^{0,i}}(s_t)[a_t],\qquad\qquad\theta'^{0,i}=(1-\tau) \theta^{0,i}+\tau\nabla_{\theta^{0,i}} J^i(\theta)
+		\$ 
+		\ENDFOR
+		\ENDFOR
+		\ENDFOR
+	\end{algorithmic}
+\end{algorithm}
+ 
+

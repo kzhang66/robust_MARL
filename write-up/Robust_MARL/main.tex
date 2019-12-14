@@ -1,0 +1,81 @@
+\documentclass{article}
+
+%\usepackage{neurips_2019}
+
+% \usepackage[margin=1in]{geometry} 
+  
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}  
+
+\newcommand{\remind}[1]{{\color{blue}#1}}
+\newcommand{\issue}[1]{{\color{red}#1}}
+
+   
+\usepackage{kz_style}
+ 
+% \usepackage{refcheck}
+\usepackage{mathrsfs}
+\usepackage{comment}
+\usepackage{booktabs}       % professional-quality tables
+
+  
+\makeatletter
+\def\maketag@@@#1{\hbox{\m@th\normalfont\normalsize#1}} 
+\makeatother
+ 
+\author{Kaiqing Zhang \and Sahika Genc} 
+
+      
+ 
+\begin{document}
+
+\title{Robust Multi-Agent Reinforcement Learning With Reward Uncertainty}
+
+%\author{Kaiqing Zhang \and Zhuoran Yang \and Tamer Ba\c{s}ar}
+
+%\date{\today}
+\maketitle   
+   
+ 
+
+
+\begin{abstract}
+In this work, we study the problem of multi-agent reinforcement learning (MARL) in face of the uncertainty of reward functions and probably also transition dynamics, namely, \emph{robust MARL}.  This is naturally motivated from the application of multi-car DeepRacer, where each user may train their multi-car racing agent using their own developed reward function, which may vary among different users with different preferences. Therefore, to enable racing in a multi-car setting with unknown opponent, the learning agent needs to train a policy that is robust to the opponent's policy that may be the equilibrium of a game based on the its own  reward function. 
+\end{abstract}
+ 
+ 
+ 
+\input{introduction} 
+
+\input{background}
+
+
+
+
+
+
+
+
+%\input{proof} 
+
+
+\input{algorithm}
+
+%\input{formulation}
+
+
+ 
+
+\newpage
+
+\bibliographystyle{ims}
+\bibliography{main}
+
+\appendix
+
+
+
+
+ 
+\end{document}

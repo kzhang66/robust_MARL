@@ -1,0 +1,57 @@
+\begin{thebibliography}{7}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{}\fi
+
+\bibitem[{Eysenbach et~al.(2019)Eysenbach, Tyo, Gu, Salakhutdinov, Lipton and
+  Levine}]{eysenbach2019reinforcement}
+\textsc{Eysenbach, B.}, \textsc{Tyo, J.}, \textsc{Gu, S.},
+  \textsc{Salakhutdinov, R.}, \textsc{Lipton, Z.} and \textsc{Levine, S.}
+  (2019).
+\newblock Reinforcement learning with unknown reward functions.
+\newblock In \textit{Proceedings of the Workshop on ``Structure \& Priors in
+  Reinforcement Learning'' at International Conference on Learning
+  Representations}.
+
+\bibitem[{Hu and Wellman(2003)}]{hu2003nash}
+\textsc{Hu, J.} and \textsc{Wellman, M.~P.} (2003).
+\newblock Nash {Q}-learning for general-sum stochastic games.
+\newblock \textit{Journal of Machine Learning Research}, \textbf{4} 1039--1069.
+
+\bibitem[{Karde{\c{s}} et~al.(2011)Karde{\c{s}}, Ord{\'o}{\~n}ez and
+  Hall}]{kardecs2011discounted}
+\textsc{Karde{\c{s}}, E.}, \textsc{Ord{\'o}{\~n}ez, F.} and \textsc{Hall,
+  R.~W.} (2011).
+\newblock Discounted robust stochastic games and an application to queueing
+  control.
+\newblock \textit{Operations Research}, \textbf{59} 365--382.
+
+\bibitem[{Littman(1994)}]{littman1994markov}
+\textsc{Littman, M.~L.} (1994).
+\newblock Markov games as a framework for multi-agent reinforcement learning.
+\newblock In \textit{International Conference on Machine Learning}.
+
+\bibitem[{Lowe et~al.(2017)Lowe, Wu, Tamar, Harb, Abbeel and
+  Mordatch}]{lowe2017multi}
+\textsc{Lowe, R.}, \textsc{Wu, Y.}, \textsc{Tamar, A.}, \textsc{Harb, J.},
+  \textsc{Abbeel, P.} and \textsc{Mordatch, I.} (2017).
+\newblock Multi-agent actor-critic for mixed cooperative-competitive
+  environments.
+\newblock \textit{arXiv preprint arXiv:1706.02275}.
+
+\bibitem[{Szepesv{\'a}ri and Littman(1999)}]{szepesvari1999unified}
+\textsc{Szepesv{\'a}ri, C.} and \textsc{Littman, M.~L.} (1999).
+\newblock A unified analysis of value-function-based reinforcement-learning
+  algorithms.
+\newblock \textit{Neural Computation}, \textbf{11} 2017--2060.
+
+\bibitem[{Zhang et~al.(2018)Zhang, Yang, Liu, Zhang and
+  Ba\c{s}ar}]{zhang2018fully}
+\textsc{Zhang, K.}, \textsc{Yang, Z.}, \textsc{Liu, H.}, \textsc{Zhang, T.} and
+  \textsc{Ba\c{s}ar, T.} (2018).
+\newblock Fully decentralized multi-agent reinforcement learning with networked
+  agents.
+\newblock In \textit{International Conference on Machine Learning}.
+
+\end{thebibliography}

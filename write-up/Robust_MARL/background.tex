@@ -1,0 +1,224 @@
+
+
+
+\section{Problem Formulation}\label{sec:background}
+
+In this section, we introduce the background and formulation of the robust MARL problem. 
+
+
+\subsection{Markov Games and MARL}\label{sec:MARL_form} 
+In order to model the interaction among agents, a general framework of \emph{Markov games} has been used  in the literature of MARL \citep{littman1994markov}. 
+In particular, a Markov game $\cG$ is usually characterized by a tuple 
+\$
+\cG:=\la\cN,\cS,\{\cA^i\}_{i\in\cN},\{R^i\}_{i\in\cN},P,\gamma\ra,
+\$
+ where $\cN=[N]$ denotes the set of $N$ agents, $\cS$ denotes the state space that is common to all agents, $\cA^i$ denotes the action space of agent $i\in\cN$. $R^i:\cS\times\cA^1\times\cdots\times\cA^N\to \RR$ represents the reward function of agent $i$, which is dependent on the state and the joint action of all agents.   $P:\cS\times\cA^1\times\cdots\times\cA^N\to\Delta(\cS)$ represents the state transition probability that is a mapping from the current state and the joint action to the probability distribution over the state space.  $\gamma\in[0,1]$ is the discounting factor. 
+ 
+ 
+At each time $t$, 
+each agent  selects its own action $a^i_t\in\cA^i$ in face of the  system state $s_t$, according to its own policy $\pi^i:\cS\to \Delta(\cA^i)$, which is a mapping from the state space to the probability distribution over action space $\cA^i$.
+Note that here we only consider the \emph{Markov policies} that depend on the current state $s_t$ at time $t$. 
+ Then the system transits to the next state $s_{t+1}$ and each agent $i$ receives the instantaneous reward $r^i_t=R^i(s_t,a^1_1,\cdots,a^N_t)$. The goal of each agent $i$ is to maximize the long-term return $J^i$ calculated using $r^i_t$, i.e., 
+\#\label{equ:def_return_i} 
+\max_{\pi^i}\quad J^i(\pi^i,\pi^{-i}):=\EE\bigg[\sum_{t=0}^\infty \gamma^tr^i_t\bigggiven s_0,a^i_t\sim\pi^i(\cdot\given s_t)\bigg]
+\#
+where  $-i$ represents the indices of all agents except agent $i$, and 
+$\pi^{-i}:=\prod_{j\neq i}\pi^j$ refers to the joint policy of all agents except agent $i$. 
+%Note that different from the setting of single-agent RL, the objective of agent $i$  not only depends on its own policy $\pi^i$, but also on others' joint policy $\pi^{-i}$. Therefore, from the perspective of a single-agent $i$, the problem is no longer stationary and Markov \citep{busoniu2008comprehensive}. 
+In the same vein, one can define the value and action-value (Q)-function for each agent $i$ as follows 
+\$
+V^i(s)&:=\EE\bigg[\sum_{t=0}^\infty \gamma^tr^i_t\bigggiven s_0=s,a^i_t\sim\pi^i(\cdot\given s_t)\bigg], \\ Q^i(s,a^1,\cdots,a^N)&:=\EE\bigg[\sum_{t=0}^\infty \gamma^tr^i_t\bigggiven s_0=s,a^i_0=a^i,a^i_t\sim\pi^i(\cdot\given s_t)\bigg]. 
+\$ 
+
+
+
+
+Due to the coupling of agents' policies in $J^i$, the  solution concept of maximizing the return of a single agent is unattainable. Instead, one commonly used solution concept is the (Markov perfect) \emph{Nash equilibrium} (NE) of the game. Specifically, the NE is defined as the point of a joint policy $\pi_*:=(\pi_*^1,\cdots,\pi_*^N)$ at which 
+\#\label{equ:def_NE}
+J^i(\pi^i_*,\pi^{-i}_*)\geq J^i(\pi^i,\pi^{-i}_*),\quad \forall i\in\cN,
+\#
+namely, given all other agents' equilibrium policy $\pi^{-i}_*$, there is no motivation for agent $i$ to deviate from $\pi^{i}_*$. Hence, the goal of MARL is to solve for the NE of the Markov game $\cG$ without the knowledge of the model.  
+  
+
+
+\begin{comment}
+On the other hand,  if all the opponents policy $\pi^{-i}$ is fixed, the problem for agent $i$ reduces to a single-agent decision-making problem $\cM^i:=\la\cS,\cA^i,\tilde R^i,\tilde P^i,\gamma\ra$, where 
+\$ 
+\tilde R^i(s,a^i)&:=\int_{\cA^{-i}}R^i(s,a^i,a^{-i})\pi^{-i}(a^{-i}\given s)da^{-i}\\
+\tilde P^i(\cdot\given s,a^i)&:=\int_{\cA^{-i}}P(\cdot\given s,a^i,a^{-i})\pi^{-i}(a^{-i}\given s)da^{-i}.
+\$
+To simplify the notation, we also define the \emph{best-response} operator $\cB^i:\Pi^{-i}\to\Pi^i$, where $\Pi^{i}$ represents the policy space for agent $i$, as follows:
+\$
+\cB^i(\pi^{-i}):=\argmax_{\pi^i}~~J^i(\pi^i,\pi^{-i}). 
+\$
+Let $\cB:=(\cB^1,\cdots,\cB^N)$, then the NE is the fixed point of the operator $\cB$, i.e., 
+$\pi_*=\cB(\pi_*)$. In addition, viewing the NE using the best-response operator motivates the use of \emph{opponent-modeling} in the algorithm design later. 
+   
+
+\subsection{Multi-Car Racing for DeepRacer} \label{sec:multi_car_racing}
+In general, multi-car racing with the current DeepRacer system configuration can be modeled as a Markov game with partial-observability. For notational simplicity, we consider the setting with only two cars\footnote{Note that our formulation  and algorithm design later can  be readily generalized to the setting with $N>2$ cars.}. 
+Specifically, the state  $s=(s^1,s^2)$ is the position of both cars on the track, where $s^i=(x^i,y^i)$ denotes the coordinates of the car $i$ on the map. The action of each car $i$ is its velocity $a^i=v^i=(v_x^i,v_y^i)$.  The transition probability model is the physical model that deterministically  describes the advance of all cars, i.e., 
+\$
+s^i_{t+1}=s^i_{t}+\Delta t*(a^i_t).
+\$
+Each car has its own reward function $R^i(s,a^1,a^2)$, which characterizes the goal of both finishing the racing as soon as possible and avoiding collision with the opponent during racing. 
+Note that both goals are dependent on the state and joint action of both agents. 
+Details of engineering the reward function can be found in the quip document \cite{reward_design_quip} and will not be discussed here. 
+
+In the current single-car setting, the DeepRacer has access to the image stream from the camera it carries. The image, which is in fact the \emph{observation}, has been treated as the \emph{state}, and has achieved success previously in both simulations and sim-to-real experiments. 
+This is mainly due to the fact that the state in single-car setting is the position of the car, which can be identified by the image observation (almost) without ambiguity. 
+However, such partial observability will cause great challenge in the multi-agent setting, since the state here depends on the position of all cars, which cannot be completely captured by the image of the  camera on a single car. This problem can be generally modeled as a partially-observed Markov/Stochastic game (POSG) \citep{hansen2004dynamic}, which has been notoriously known to be intractable since its algorithmic complexity grows exponentially with the number of agents. Specifically, this is because in POSG, different agents have different observations, which leads to different beliefs over the state. In fact, it has been show that the optimal strategy of a single-agent in POSG relies on the belief not only over the state, but also over the strategies of the opponents \citep{hansen2004dynamic}.  An alternative  solution is to enable each agent to have access to the \emph{perfect observations} of all other agents, so that each agent will main identical belief over the state, which reduces the multi-agent decision making to a single-agent one (but each still needs to solve a game even with such perfect information). Nonetheless, such an approach requires  unlimited bandwidth as well as  instantaneous and noiseless 
+communication between agents, which is impractical for real systems like DeepRacer, especially in the racing setting where all agents are competing instead of cooperating and may not have the motivation to share such information. 
+
+To tackle   such challenges, we propose two potential solutions that are practical, considering the current software and hardware assets we have on DeepRacer, as to be introduced below. 
+
+
+\subsubsection{The Use of \emph{God Camera}: Remove Partial Observability}
+
+The first solution is to use the so-called \emph{God Camera}, which can be  mounted on the ceiling of the racing room and can observe the position of all cars. This is easy to implement and is viable hardware-wise, especially with the aid of the \emph{DeepLense} sensor from Amazon. All cars can have access to the image stream collected from the God Camera, which brings back the problem to the fully observed setting, with the God Camera image being the state. This is also relatively easy to implement in the simulation, by simply adding a camera stream fed to all agents in Gazebo. This minor change of  hardware  greatly simplifies the problem, so that we can  test some computationally feasible MARL  algorithms developed for the fully observed setting, for example, minimax-Q learning \citep{littman1994markov}, policy gradient for zero-sum Markov games  \citep{pinto2017robust}.
+
+
+Due to its easiness to implement, we can use this solution as the baseline environment for testing MARL algorithms. 
+ Additionally, we note that the use of this God Camera may help improve the performance 	of single-car racing as well. 
+  
+  
+  
+\subsubsection{Centralized Training \& Decentralized Execution} 
+
+
+The second solution is to use the idea of \emph{Centralized Training \& Decentralized Execution} originated from \cite{foerster2016learning,lowe2017multi}. Specifically, during training which is conducted in simulations for DeepRacer, extra information, for example, observations and actions of other agents, can be used  to ease the training. While during execution, these pieces of information are not available and only local observations can be used as input to the policy. 
+
+In this setting, it is unnatural to develop Q-learning or other value-based RL algorithms, since in general Q-function cannot contain different information at training and testing time \citep{lowe2017multi}.  
+  Hence, actor-critic/policy-gradient methods become feasible choices, since it is the critic that uses other agents' information, and   as long as the actor is trained to use only local observations as input,  it will remain  decentralized during testing. 
+  After testing MARL algorithms using the first solution setup, we can switch to this setup and compare the performance with the baseline above.    
+\end{comment}
+ 
+\subsection{Formulation $1$: Robust Markov Game}\label{sec:Robust_MG_form} 
+ 
+In many practical applications, the agents may not have perfect information of the model, i.e., the reward function and/or the transition probability model. This is originally motivated from the application of multi-car racing for DeepRacer, where the reward function used to train the car in each user's multi-agent simulation environment may be different from each other. Thus, the desired policy should not only be able to robust to the opponent's policy, but also robust to the possible uncertainty of the MARL model it will compete in.  
+
+Formally, this problem can be modeled as  a \emph{robust Markov/stochastic game} problem \citep{kardecs2011discounted}, which can be formally characterized by the following tuple 
+\$
+{\bar{\cG}:=\la\cN,\cS,\{\cA^i\}_{i\in\cN},\{\ocR_{s}^i\}_{(i,s)\in\cN\times\cS},\{\ocP_s\}_{s\in\cS},\gamma\ra,}
+\$
+where  $\cN$, $\cS$, and $\cA^i$ denote the set of agents, the state, and the action space for each agent $i$, respectively, as before.
+For notational simplicity, let $\cA:=\cA^1\times\cdots\times\cA^N$. 
+Moreover, $\ocR_{s}^i\subseteq \RR^{|\cA|}$ and $\ocP_s$  denote the uncertainty sets of all possible reward function values and that of all possible transition probabilities  at state $s$, respectively. 
+Note that the uncertainty set for the reward function $\ocR_{s}^i$ may vary for different agent $i$. 
+%For simplicity, we use a uniform uncertainty set for different agents, which can be easily generalized to the case with different uncertain sets across agents. 
+ $\gamma\in[0,1]$ represents the discounting factor. 
+
+Each player considers a distribution-free incomplete information Markov game to be played using robust optimization. Such a formulation allows the use of simple uncertainty sets of the model, and requires no \emph{a prior} probabilistic information, e.g., distribution of the class of models, about the uncertainty. 
+Notice the following fact: if the player knows how to play in the robust Markov game optimally starting from the next stage on, then it would play to maximize not only the worst-case (minimal) expected immediate reward due to the model uncertainty set at the current  stage, but also the worst-case expected reward incurred in the future stages. Formally, such a recursion property leads to the following Bellman-type equation:
+\#\label{equ:Bellman_Robust_MARL}
+\oV^i_*(s)=\max_{\pi^i(\cdot\given s)}~\min_{\substack{\oR^i_s\in\bar{\cR}^i_{s} \\\oP(\cdot\given s,\cdot)\in\bar{\cP}_s}}\quad \sum_{a\in\cA} \prod_{j=1}^N\pi^j(a^j\given s)\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}\oP(s'\given s,a)\oV^i_*(s')\bigg),
+\#
+where $\oV^i_*:\cS\to \RR$ denotes the \emph{optimal robust value},  $\oR^i_s=[\oR^i(s,a)]_{a\in\cA}^\top\in \bar{\cR}^i_{s}\subseteq \RR^{|\cA|} $ with $a=(a^1,\cdots,a^N)$, is the vector of possible reward values of agent $i$ that lies in the uncertain set of vectors $\bar{\cR}^i_{s}$ at state $s$. $\oP(\cdot\given s,\cdot):\cA^1\times\cdots\cA^N\to \Delta(\cS)$ denotes the possible transition probability lying in the uncertain set $\bar{\cP}_s$. 
+Note that the uncertainty here can be viewed as the decision made by an implicit player, \emph{the nature}, who always plays against  each agent $i$ by selecting the worst-case data at every state. 
+%Then, under certain conditions as in \cite{kardecs2011discounted},  such optimal robust value in \eqref{equ:Bellman_Robust_MARL} exists. 
+If such an optimal robust value exists, then it also leads to  the definition of \emph{robust Markov perfect Nash equilibrium} (RMPNE), the solution concept for robust Markov games, as follows.
+
+\begin{definition}\label{def:robust_NE}
+	A joint policy $\pi_*=(\pi^1_*,\pi^2_*,\cdots,\pi^N_*)$ is the \emph{robust Markov perfect Nash equilibrium}, if for any $s\in\cS$, and all $i\in[N]$, there exists a vector of value functions $\oV_*=(\oV_*^1,\cdots,\oV_*^N)$ with each $\oV^i_*:\cS\to\RR$, such that
+	\$
+	\pi^i_*(\cdot\given s)\in\argmax_{\pi^i(\cdot\given s)}\min_{\substack{\oR^i_s\in\bar{\cR}^i_{s} \\\oP(\cdot\given s,\cdot)\in\bar{\cP}_s}}~ \sum_{a\in\cA} \pi^i(a^i\given s)\prod_{j\neq i}\pi^j_*(a^j\given s)\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}\oP(s'\given s,a)\oV^i_*(s')\bigg). 
+	\$
+\end{definition}
+
+By Definition \ref{def:robust_NE}, the perfect Nash equilibrium we consider is \emph{stationary}, i.e., time-invariant.  
+We then show in the following proposition that 
+such a stationary robust Markov perfect Nash equilibrium  exists under certain conditions.
+
+\begin{proposition}\label{prop:exist_NE}
+	Suppose the state and action spaces $\cS$ and $\cA$ are finite, 
+	and the uncertain sets of both the transition probabilities and rewards of the robust Markov game $\bar{\cG}$, namely, $\ocR^i_{s}$ and $\ocP_s$ for all $s\in\cS$ and $i\in\cN$, belong to compact sets. Then, a robust Markov perfect Nash equilibrium exists. 
+\end{proposition}
+\begin{proof}
+	The proof follows almost the same routine as that for Theorem $4$ in \citep{kardecs2011discounted}. The main difference in the model is that the reward uncertainty set $\ocR^i_{s}$ may vary across agents. However, the proof in \citep{kardecs2011discounted} is done for each agent $i$ individually, and for each agent $i$ the argument holds by replacing the $C_s$ therein by the $\ocR^i_{s}$ here. The rest of the proof follows directly. We omit the proof here for brevity. 
+\end{proof}
+
+
+For both simplicity and better implication for DeepRacer, we will focus on the uncertainty in the reward function only hereafter, i.e., the set $\ocP_s=\{P(\cdot\given s,\cdot)\}$ only has one element, the exact transition $P(\cdot\given s,\cdot)$. 
+%In addition, we further assume that the support for reward function $\ocR_{s}$ is finite. 
+Therefore, the Bellman-type equation in \eqref{equ:Bellman_Robust_MARL} can be written as 
+\small
+\#
+&\oV^i_*(s)=\max_{\pi^i(\cdot\given s)}~\min_{\oR^i_s\in\ocR^i_s}~ \sum_{a\in\cA} \pi^i(a^i\given s)\prod_{j\neq i}\pi^j_*(a^j\given s)\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}P(s'\given s,a)\oV^i_*(s')\bigg)\label{equ:Bellman_Robust_MARL_reward_0}\\
+&=\max_{\pi^i(\cdot\given s)}~\min_{\pi^{0,i}(\cdot\given s)}~ \sum_{\oR^i_s\in \ocR^i_s}\pi^{0,i}\big(\oR^i_s\biggiven s\big)\sum_{a\in\cA} \pi^i(a^i\given s)\prod_{j\neq i}\pi^j_*(a^j\given s)\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}P(s'\given s,a)\oV^i_*(s')\bigg)\notag\\
+&=\max_{\pi^i(\cdot\given s)}~\min_{\pi^{0,i}(\cdot\given s)}~ \EE_{\oR^i_s\sim \pi^{0,i}(\cdot\given s),a^i\sim\pi^i(\cdot\given s),a^{-i}\sim\pi^{-i}(\cdot\given s)}\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}P(s'\given s,a)\oV^i_*(s')\bigg),\label{equ:Bellman_Robust_MARL_reward}
+\#
+\normalsize
+where $\pi^{0,i}:\cS\to\Delta(\ocR)$ denotes the policy of the nature against agent $i$, a mapping from the  state  space to the probability distribution over the  joint uncertain set of the reward $\ocR:=\prod_{s\in\cS}\ocR_{s}$. 
+%\issue{Note that since the uncertain set $\ocR_{s}$ and $\ocP_s$ are assumed to be commonly known by all the agents, the policy of the nature $\pi^0$ does not depend on which agent $i$ it is facing. we can do individual uncertain sets.}
+%Note that one input argument of the policy $\pi^0$ is the agent index $i$, 
+Since the agents are not symmetric in the sense that the reward uncertainty and the role they play in the transition $P$ may be different, the nature's policy against each agent $i$ can be different. Thus, the policy for the nature is in fact a set, $\pi^0:=\{\pi^{0,i}\}_{i\in\cN}$.  
+The equivalence between \eqref{equ:Bellman_Robust_MARL_reward_0} and \eqref{equ:Bellman_Robust_MARL_reward} is due to the fact that the inner-loop minimization over a deterministic choice of $\oR^i_s$ can be achieved by the minimization over the stochastic strategy, i.e., a probability distribution, over the support $\ocR_{s}$. 
+
+By introduction of the \emph{nature player} and its policy set $\pi^0=\{\pi^{0,i}\}_{i\in\cN}$, we further define the solution concept of \emph{RMPNE with nature (NRMPNE)} as follows. 
+
+\begin{definition}\label{def:robust_NNE}
+	A joint policy $\tilde{\pi}_*=(\pi^0_*,\pi^1_*,\cdots,\pi^N_*)$ is the \emph{robust Markov perfect Nash equilibrium with nature}, where $\pi^0_*=\big\{\pi^{0,i}_*\big\}_{i\in\cN}$,  if for any $s\in\cS$, and all $i\in\cN$, there exists a vector of value functions $\oV_*=(\oV_*^1,\cdots,\oV_*^N)$ with each $\oV^i_*:\cS\to\RR$, such that
+%	\small
+	\$
+	\big(\pi^i_*(\cdot\given s),\pi^{0,i}_*(\cdot\given s)\big)\in\argmaxmin_{\pi^i(\cdot\given s),\pi^{0,i}(\cdot\given s)}~&\sum_{\oR^i_s\in \ocR^i_s}\pi^{0,i}\big(\oR^i_s\biggiven  s\big)\sum_{a\in\cA} \pi^i(a^i\given s)\\
+	&\quad\prod_{j\neq i}\pi^j_*(a^j\given s)\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}P(s'\given s,a)\oV^i_*(s')\bigg). 
+%	\sum_{a\in\cA} \pi^i(a^i\given s)\prod_{j\neq i}\pi^j_*(a^j\given s)\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}\oP(s'\given s,a)\oV^i_*(s')\bigg). 
+	\$
+	\normalsize
+\end{definition}
+
+By Proposition \ref{prop:exist_NE}, the existence of a RMPNE $\pi_*$ is equivalent to the existence of a NRMPNE $\tilde{\pi}_*$ with $\pi^{0,i}_*$ being a \emph{deterministic} policy for all $i$. Thus, we will only consider the nature's policy as a deterministic one hereafter, i.e., $\pi^{0,i}_*:\cS\to \ocR$. Now the goal is to find the NRMPNE $\tilde \pi_*$. 
+ 
+%\issue{ 
+%\noindent IDEA:
+%\citep{kardecs2011discounted,kardecs2014discounted} robust MG + \citep{lim2013reinforcement} for robust MDP RL.
+%} 
+
+\subsection{Formulation $2$: MARL with Unknown Reward}\label{sec:unknown_reward_form} 
+
+If only the uncertainty of the reward function needs to be considered, it may not be necessary to use the general robust MARL model as in \S\ref{sec:Robust_MG_form}. Instead, motivated  by the formulation in \cite{eysenbach2019reinforcement}, we propose multi-agent RL with unknown reward functions. Compared to the robust model above, the setting here assumes that the unknown reward function follows some \emph{a prior} distribution. 
+The goal of the policy is to achieve a high return at the test time, when a new reward function may be drawn from this distribution. As in \cite{eysenbach2019reinforcement}, one can address both the maximization of the \emph{expected} and \emph{worst-case} return. Specifically, consider the setting that can be characterized by the following tuple $\tilde G$:
+\$
+{\tilde{\cG}:=\la\cN,\cS,\{\cA^i\}_{i\in\cN},\{P^{R^i}_{s}\}_{(i,s)\in\cN\times\cS},P,\gamma\ra,}
+\$
+where $\cN,\cS,\cA,\gamma$ are as defined before, $P:\cS\times\cA^1\times\cdots\times\cA^N\to\Delta(\cS)$ represents the state transition probability, and $P^{R^i}_{s}\in\Delta(\ocR_{s})$ is the probability distribution over the support of $\oR_{s}$, namely, $\ocR_{s}$,  of possible reward functions. Then for expected return maximization, each agent $i$ aims to find the policy $\pi_*^i:\cS\to\Delta(\cA^i)$ such that 
+\$
+\pi^i_*\in\argmax_{\pi^i}~\EE_{\oR^i_{s_t}\sim P^{R^i}_{s_t}}\bigg\{
+\EE\bigg[\sum_{t=0}^\infty \gamma^tr^i_t\bigggiven s_0,a^i_t\sim\pi^i(\cdot\given s_t)\bigg]
+%\sum_{a\in\cA} \prod_{j=1}^N\pi^j(a^j\given s)\bigg(R^i(s,a)+\gamma \sum_{s'\in\cS}P(s'\given s,a)V^i(s')\bigg)
+\bigg\},
+\$
+for some given $\pi^{-i}$. 
+By linearity of the expectation, one can instead find the policy for the new Markov game setting with the expected reward 
+\$
+\EE_{\oR^i_{s}\sim P^{R^i}_{s}}[R^i(s,a)]
+\$ as the reward. This essentially reduces to a standard Markov game, and can be solved by off-the-shelf MARL algorithms. 
+
+On the other hand, for worst-case return maximization, the goal is to find the policy $\pi_*^i:\cS\to\Delta(\cA^i)$ such that 
+\$
+\pi^i_*\in\argmax_{\pi^i}~\min_{\oR_{s_t}\in\ocR_{s_t}}~\bigg\{
+\EE\bigg[\sum_{t=0}^\infty \gamma^tr^i_t\bigggiven s_0,a^i_t\sim\pi^i(\cdot\given s_t)\bigg]
+%\sum_{a\in\cA} \prod_{j=1}^N\pi^j(a^j\given s)\bigg(R^i(s,a)+\gamma \sum_{s'\in\cS}P(s'\given s,a)V^i(s')\bigg)
+\bigg\},
+\$
+where the reward function at each state $s$ is taken as the worst one over the support $\ocR_s$. In fact, this formulation will lead to essentially the same Bellman-type equation as \eqref{equ:Bellman_Robust_MARL},  with the transition probability $\oP=P$. This will further lead to the equivalent equation \eqref{equ:Bellman_Robust_MARL_reward}. Therefore, we will focus on solving the Bellman-type equation  \eqref{equ:Bellman_Robust_MARL_reward} hereafter. 
+%Suppose $\oR_{s,a}$ has finite dimension $d$, then the inner-loop minimization can be performed 
+
+
+
+
+%Instead of accounting for  the general model uncertainty from a robust optimization perspective, we may only want to focus on the uncertainty in the reward function. 
+
+%Include both cases: distributional and worst-case on the reward functions, specifically. The idea and formulation follows from 
+
+ 
+
+\subsection{Multi-Car Arena Platform}\label{sec:platform} 
+
+Besides the formal formulation above, AWS and the DeepRacer team are also thinking to build a platform API for the users, in order to provide services for the users to learn  \emph{robust policies} against opponents trained from various environments in a more efficient way. In particular, the platform, maybe named   \emph{multi-car arena}, is devised to help users to better train their multi-car policy against the policies collected by the platform. The platform will train several baseline policies, and will not disclose the policy to the user. Instead, the opponent policies will be embedded in the arena environment, and only provide feedback signal to the training agent.  As a payment, the user has to submit their updated policy to the platform, so that the platform can update the policies in the pool on the fly. 
+Note that this is closer to an engineering problem, by adding a new feature of the product that may benefit the development of multi-car racing among users. 
+
+
+
+
+

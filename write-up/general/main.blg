@@ -1,0 +1,47 @@
+This is BibTeX, Version 0.99d (TeX Live 2019)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: /Users/Work/MARL/sync_docs/write-up/general/main.aux
+The style file: ims.bst
+Database file #1: main.bib
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+You've used 16 entries,
+            3062 wiz_defined-function locations,
+            729 strings with 7786 characters,
+and the built_in function-call counts, 9250 in all, are:
+= -- 693
+> -- 456
+< -- 7
++ -- 177
+- -- 159
+* -- 768
+:= -- 1497
+add.period$ -- 48
+call.type$ -- 16
+change.case$ -- 142
+chr.to.int$ -- 16
+cite$ -- 16
+duplicate$ -- 678
+empty$ -- 672
+format.name$ -- 203
+if$ -- 1745
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 132
+newline$ -- 87
+num.names$ -- 64
+pop$ -- 297
+preamble$ -- 1
+purify$ -- 117
+quote$ -- 0
+skip$ -- 224
+stack$ -- 0
+substring$ -- 278
+swap$ -- 354
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 141
+warning$ -- 0
+while$ -- 56
+width$ -- 0
+write$ -- 203

@@ -1,0 +1,11 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Problem Formulation}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Multi-Agent Reinforcement Learning}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Multi-Car Racing for DeepRacer}{section.2}% 4
+\BOOKMARK [3][-]{subsubsection.2.2.1}{The Use of God Camera: Remove Partial Observability}{subsection.2.2}% 5
+\BOOKMARK [3][-]{subsubsection.2.2.2}{Centralized Training \046 Decentralized Execution}{subsection.2.2}% 6
+\BOOKMARK [1][-]{section.3}{Algorithms}{}% 7
+\BOOKMARK [2][-]{subsection.3.1}{Fixed-policy Opponent}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.2}{Adaptive-policy Opponent}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.3}{Game-theoretic Opponent}{section.3}% 10
+\BOOKMARK [2][-]{subsection.3.4}{Opponent Modeling}{section.3}% 11

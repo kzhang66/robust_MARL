@@ -1,0 +1,143 @@
+
+
+\section{Algorithms}\label{sec:alg}
+
+According to the formulation in \S\ref{sec:background}, we propose three stages  of algorithm design tasks for multi-car racing. The three stages are categorized  based on the  types of  opponent behavior.   After that, we discuss the approaches to do opponent modeling, a core immediate step in most of the three stages. 
+
+\subsection{Fixed-policy Opponent}
+In this stage, we consider the opponent as an agent with a fixed policy that is not changing over time. For example, in the setting of two-car   racing, the opponent car is either staying still or moving with a constant speed along the track. The goal of the learning car is to avoid collision with the opponent car and finish the race quickly.  
+As mentioned in \S\ref{sec:MARL_form},  from the perspective of the learning car, the problem is a single-agent decision-making problem, with certain reward and transition model that depend on the opponent policy. 
+Since the opponent is not making decisions simultaneously, and the environment is stationary and Markovian for the learning car.
+Therefore, the optimal policy for the learning agent can be obtained via standard single-agent RL algorithms. For example, we can start with the proximal policy optimization (PPO) algorithm \citep{schulman2017proximal} that has been used in single-car racing. 
+Now we  develop algorithms for both solution settings in \S\ref{sec:multi_car_racing}. 
+              
+\vspace{7pt}
+\noindent\textbf{With God Camera} 
+\vspace{3pt}
+
+
+With full observability of the state, if the opponent policy is additionally fixed, then the problem becomes an MDP. This way, we only need to: i) change the reward function, so that collision is penalized; ii) change the state from the local camera image to the God Camera image.  See details of designing collision-avoiding reward in \cite{reward_design_quip}. 
+
+\vspace{7pt}
+\noindent\textbf{Centralized Training \& Decentralized Execution}
+\vspace{3pt}
+
+
+This setting allows partial observability of each agent. We can  build up our algorithm based on the actor-critic  algorithm in \cite{lowe2017multi}. This reduces to the same information  structure as the current \emph{object-avoidance} task. What we need to do is to use a centralized trainer to  provide the joint action information  to the learning car. Essentially, this changes our current single-agent PPO algorithm to the actor-critic one in \cite{lowe2017multi}, just with the environment changed from the object-free one to the one with object. 
+
+
+We note that in both cases, there is no need to \emph{model the opponent}, since its policy is not changing over time. In fact,  any instantaneous  action of the other agent reflects the behavior of the time-invariant policy. Specifically, for the fully observed setting, we can view $(s_t,a^{-i}_t)$ as the joint state, which preserves the Markov and stationary property. Such a property also holds even  in the second setting with partial observability.  
+
+\subsection{Adaptive-policy Opponent}
+
+In this stage, the opponent is also not assumed to be strategic, i.e., the opponent is not a game player and its policy is not optimal in its own best interest.  The opponent  policy  may be fixed for a period of  time, but can change over time. 
+Therefore, it is not sufficient to only use instantaneous action of the opponent to infer its behavior. Instead, the learning car needs to use the historical data of the opponent's action to approximate its policy, and adapt to learn a best-response to that policy. Moreover, the learning car may also need to update the approximation of the opponent policy on the fly, so that it keeps track of the change of the opponent behavior over time. 
+In order to make the setting sensible, we assume that the change of the opponent policy is slower in comparison to the adaptation of the learning policy in response to it. 
+
+
+\vspace{7pt}
+\noindent\textbf{With God Camera}
+\vspace{3pt}
+
+ 
+ The algorithm may be implemented in a double-loop fashion. In particular, in the inner loop, the learning car can model the opponent policy as a mapping from the state space, i.e., the God Camera image, to its own action space, using techniques to be introduced in \S\ref{sec:opponet_model}. 
+ Here, the instantaneous action of the opponent $a^{-i}_t$, i.e., its velocity at time $t$, need to be observed. 
+ This is available in training in the simulations. 
+ It then uses single-agent RL algorithms to learn the best-response policy. 
+In the outer loop, the opponent policy is updated as the dataset of the opponent actions updates, every several inner loops.  
+
+
+\vspace{7pt}
+\noindent\textbf{Centralized Training \& Decentralized Execution}
+\vspace{3pt}
+
+
+The algorithm is also double-loop as above. The main difference is that in the inner loop, the opponent policy is modeled as a mapping from its observation space, i.e., its local camera image, to its action space. As a result, the opponent's instantaneous observation is also needed, in addition to its instantaneous action. In the centralized trainer, both pieces of information are available. 
+
+ 
+
+\subsection{Game-theoretic Opponent}
+
+In this stage, both the learning the opponent cars are players of the Markov game, i.e., both agents are strategic. Specifically, both agents aim to maximize the long-term return corresponding to their own reward functions, while considering the involvement of the other agent in decision-making. 
+
+
+\vspace{7pt}
+\noindent\textbf{With God Camera} 
+\vspace{3pt}
+
+
+In the fully observed setting, it can be shown that  the Markov game can be solved by solving each stage normal-form game in a dynamic programming manner \citep{littman1994markov}. Hence, as long as it is assumed that the opponent is a rational learner, each stage game can be solved by solving a linear program  \citep{myerson2013game}. 
+
+We note that there is no need to model/infer the opponent policy using historical data, since its behavior is more or less predictable, and can be obtained in only the learning car's mind. For example, if value-based approaches, say, minimax-Q learning \citep{littman1994markov},  are used, then the opponent policy can be obtained  implicitly by solving the stage games.  Moreover, for policy-based approaches, the learning car  can utilize policy gradient to improve the opponent policy in an online fashion  \citep{pinto2017robust}.  
+
+We also note that if the convergence of the opponent policy is faster than that of the learning car's policy, namely, the opponent policy is almost unchanged during the policy optimization of the learning car, such an approach can be viewed as the \emph{fictitious play} in game theory \citep{brown1951iterative,monderer1996fictitious}. The basic idea behind fictitious play is that each player maintains an approximation of the opponent policy using the historical action data, and takes either best-response or better-response to the fictitious policy. It has been shown that if all agents follow this play, the algorithm converges to the Nash equilibrium of certain normal-form games \citep{monderer1996fictitious,shamma2005dynamic}. However, for stochastic/Markov games with states, it has been shown that vanilla fictitious play may diverge \citep{schoenmakers2007fictitious}. Even though, such an idea has been widely applied in 
+empirical RL studies, and is  worth trying in our multi-car racing problem. 
+
+
+\vspace{7pt}
+\noindent\textbf{Centralized Training \& Decentralized Execution}
+\vspace{3pt}
+
+
+For the partially observed setting, the actor-critic based approach in \cite{lowe2017multi} directly applies, since it can handle both cooperative and competitive settings. Note that here in the centralized trainer, we can either model/infer the opponent policy as in \cite{he2016opponent,lowe2017multi}, or we can use alternative policy improvement as in the fully observed setting in \cite{pinto2017robust}. 
+
+
+
+\subsection{Opponent Modeling}\label{sec:opponet_model}
+
+One core immediate step that is most of the algorithm design  above is opponent modeling/inference. Several common approaches  are summarized in the sequel. 
+Note that we consider the partially observed setting as an example, since the fully observed one is included by letting the state be the observation. 
+For notational convenience, we assume agent $1$ is the learning car, and agent $2$ is the opponent car. 
+
+\vspace{7pt}
+\noindent\textbf{Log Probability Maximization}
+\vspace{3pt}
+
+The opponent policy is approximated by $\pi^2_{\theta^2_1}:\cO^2\to \cA^2$, a mapping   from its observation space to the probability distribution over its action space, that is parameterized by $\theta^2_1$. 
+Here we use $\theta^2_1$ to denote the parameter of the policy of agent $2$ from agent $1$'s perspective. 
+Then, the parameter $\theta^2_1$ is determined by solving the following optimization problem:
+\#\label{equ:log_prob_obj}
+\theta^2_1:=\argmax_{\theta}\quad \EE_{a^2,o^2}\Big\{\log\pi^2_{\theta^2_1}(a^2\given o^2)+\lambda H\big[\pi^2_{\theta^2_1}(\cdot\given o^2)\big] \Big\},
+\#
+where $o^2$ and $a^2$ represent the observation and action of agent $2$, $\lambda>0$ is a coefficient that  balances the two objectives, and $H\big[\pi^2_{\theta^2_1}(\cdot\given o^2)\big]$ denotes the entropy of the probability distribution $\pi^2_{\theta^2_1}(\cdot\given o^2)$,   defined as
+\$
+H\big[\pi^2_{\theta^2_1}(\cdot\given o^2)\big]:=\sum_{a^2\in\cA^2}-\pi^2_{\theta^2_1}(a^2\given o^2)\cdot\log \pi^2_{\theta^2_1}(a^2\given o^2). 
+\$
+Note that the objective \eqref{equ:log_prob_obj} aims to maximize the log probability of the data in $\cD^2$ occurs, and also adds the entropy regularization to incentive exploration for the inferred policy. 
+
+
+Given a replay buffer $\cD^2:=\big\{a^2_1,o^2_1,\cdots,a^2_T,o^2_T\big\}$, the objective function in \eqref{equ:log_prob_obj} can be approximated as 
+\#\label{equ:log_prob_obj_appro}
+&\EE_{a^2,o^2}\Big\{\log\pi^2_{\theta^2_1}(a^2\given o^2)+\lambda H\big[\pi^2_{\theta^2_1}(\cdot\given o^2)\big] \Big\}\notag\\
+&\quad\approx \frac{1}{T}\sum_{(a^2_t,o^2_t)\in\cD^2}\Big\{\log\pi^2_{\theta^2_1}(a^2_t\given o^2_t)+\lambda H\big[\pi^2_{\theta^2_1}(\cdot\given o^2_t)\big] \Big\}.
+\#
+The approximate objective can be maximized by any optimization techniques. As the replay buffer $\cD^2$ changes, the optimization of \eqref{equ:log_prob_obj_appro} is re-solved on the fly. 
+
+
+\vspace{7pt}
+\noindent\textbf{Self-Play}
+\vspace{3pt}
+
+Another way to model the opponent is to  assume that the opponent uses the same policy as the learning agent. This is also known as \emph{self-play} in the game-theoretic settings. Therefore, whenever the   the learning car maintains a policy, we can just use its current or previous versions as the opponent policy. This way, the learning car does not need to access the observation and action history of the opponent, which enables a \emph{decentralized training} architecture. 
+
+ 
+
+\vspace{7pt}
+\noindent\textbf{Implicit Modeling With Neural Nets} 
+\vspace{3pt}
+
+Motivated by \cite{he2016opponent}, we can also use the hidden layer of the neural network to model the opponent policy. In contrast to the explicit opponent policy modeling, the opponent behavior is encoded in the architecture of the neural networks. See \S$3.2$ in \cite{he2016opponent} for more details. 
+
+
+
+
+\vspace{7pt}
+\noindent\textbf{Representation Learning Approach}
+\vspace{3pt}
+
+Recently, a relatively new facet of opponent modeling is enabled by learning representations for MARL using neural networks. Such approaches impose a certain model structure to compute the \emph{representation} of the opponent, which takes the opponent observation as input, and predicts specific information about the opponent, such as their actions \citep{grover2018learning} or returns \citep{tacchetti2018relational} received by the modeled agent. The subtle difference from the explicit opponent policy modeling above is that the \emph{model} here may be more complicated than just the policy. The policy network of the learning car is then trained by receiving its own observations concatenated with output representations from the representation network. Compared to explicit opponent policy modeling, this representation learning approach has been claimed to have better generalizability to opponents that have yet been encountered. 
+
+
+
+
+

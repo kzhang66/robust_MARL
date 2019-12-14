@@ -1,0 +1,113 @@
+\begin{thebibliography}{16}
+\expandafter\ifx\csname natexlab\endcsname\relax\def\natexlab#1{#1}\fi
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{}\fi
+
+\bibitem[{Brown(1951)}]{brown1951iterative}
+\textsc{Brown, G.~W.} (1951).
+\newblock Iterative solution of games by fictitious play.
+\newblock \textit{Activity Analysis of Production and Allocation}, \textbf{13}
+  374--376.
+
+\bibitem[{Busoniu et~al.(2008)Busoniu, Babuska and
+  De~Schutter}]{busoniu2008comprehensive}
+\textsc{Busoniu, L.}, \textsc{Babuska, R.} and \textsc{De~Schutter, B.} (2008).
+\newblock A comprehensive survey of multi-agent reinforcement learning.
+\newblock \textit{IEEE Transactions on Systems, Man, And Cybernetics-Part C:
+  Applications and Reviews, 38 (2), 2008}.
+
+\bibitem[{Foerster et~al.(2016)Foerster, Assael, de~Freitas and
+  Whiteson}]{foerster2016learning}
+\textsc{Foerster, J.}, \textsc{Assael, Y.~M.}, \textsc{de~Freitas, N.} and
+  \textsc{Whiteson, S.} (2016).
+\newblock Learning to communicate with deep multi-agent reinforcement learning.
+\newblock In \textit{Advances in Neural Information Processing Systems}.
+
+\bibitem[{Grover et~al.(2018)Grover, Al-Shedivat, Gupta, Burda and
+  Edwards}]{grover2018learning}
+\textsc{Grover, A.}, \textsc{Al-Shedivat, M.}, \textsc{Gupta, J.~K.},
+  \textsc{Burda, Y.} and \textsc{Edwards, H.} (2018).
+\newblock Learning policy representations in multiagent systems.
+\newblock \textit{arXiv preprint arXiv:1806.06464}.
+
+\bibitem[{Hansen et~al.(2004)Hansen, Bernstein and
+  Zilberstein}]{hansen2004dynamic}
+\textsc{Hansen, E.~A.}, \textsc{Bernstein, D.~S.} and \textsc{Zilberstein, S.}
+  (2004).
+\newblock Dynamic programming for partially observable stochastic games.
+\newblock In \textit{AAAI}, vol.~4.
+
+\bibitem[{He et~al.(2016)He, Boyd-Graber, Kwok and
+  Daum{\'e}~III}]{he2016opponent}
+\textsc{He, H.}, \textsc{Boyd-Graber, J.}, \textsc{Kwok, K.} and
+  \textsc{Daum{\'e}~III, H.} (2016).
+\newblock Opponent modeling in deep reinforcement learning.
+\newblock In \textit{International Conference on Machine Learning}.
+
+\bibitem[{Littman(1994)}]{littman1994markov}
+\textsc{Littman, M.~L.} (1994).
+\newblock Markov games as a framework for multi-agent reinforcement learning.
+\newblock In \textit{International Conference on Machine Learning}.
+
+\bibitem[{Lowe et~al.(2017)Lowe, Wu, Tamar, Harb, Abbeel and
+  Mordatch}]{lowe2017multi}
+\textsc{Lowe, R.}, \textsc{Wu, Y.}, \textsc{Tamar, A.}, \textsc{Harb, J.},
+  \textsc{Abbeel, P.} and \textsc{Mordatch, I.} (2017).
+\newblock Multi-agent actor-critic for mixed cooperative-competitive
+  environments.
+\newblock \textit{arXiv preprint arXiv:1706.02275}.
+
+\bibitem[{Monderer and Shapley(1996)}]{monderer1996fictitious}
+\textsc{Monderer, D.} and \textsc{Shapley, L.~S.} (1996).
+\newblock Fictitious play property for games with identical interests.
+\newblock \textit{Journal of Economic Theory}, \textbf{68} 258--265.
+
+\bibitem[{Myerson(2013)}]{myerson2013game}
+\textsc{Myerson, R.~B.} (2013).
+\newblock \textit{Game Theory}.
+\newblock Harvard University Press.
+
+\bibitem[{Pinto et~al.(2017)Pinto, Davidson, Sukthankar and
+  Gupta}]{pinto2017robust}
+\textsc{Pinto, L.}, \textsc{Davidson, J.}, \textsc{Sukthankar, R.} and
+  \textsc{Gupta, A.} (2017).
+\newblock Robust adversarial reinforcement learning.
+\newblock In \textit{International Conference on Machine Learning}.
+
+\bibitem[{Schoenmakers et~al.(2007)Schoenmakers, Flesch and
+  Thuijsman}]{schoenmakers2007fictitious}
+\textsc{Schoenmakers, G.}, \textsc{Flesch, J.} and \textsc{Thuijsman, F.}
+  (2007).
+\newblock Fictitious play in stochastic games.
+\newblock \textit{Mathematical Methods of Operations Research}, \textbf{66}
+  315--325.
+
+\bibitem[{Schulman et~al.(2017)Schulman, Wolski, Dhariwal, Radford and
+  Klimov}]{schulman2017proximal}
+\textsc{Schulman, J.}, \textsc{Wolski, F.}, \textsc{Dhariwal, P.},
+  \textsc{Radford, A.} and \textsc{Klimov, O.} (2017).
+\newblock Proximal policy optimization algorithms.
+\newblock \textit{arXiv preprint arXiv:1707.06347}.
+
+\bibitem[{Shamma and Arslan(2005)}]{shamma2005dynamic}
+\textsc{Shamma, J.~S.} and \textsc{Arslan, G.} (2005).
+\newblock Dynamic fictitious play, dynamic gradient play, and distributed
+  convergence to nash equilibria.
+\newblock \textit{IEEE Transactions on Automatic Control}, \textbf{50}
+  312--327.
+
+\bibitem[{Tacchetti et~al.(2018)Tacchetti, Song, Mediano, Zambaldi, Rabinowitz,
+  Graepel, Botvinick and Battaglia}]{tacchetti2018relational}
+\textsc{Tacchetti, A.}, \textsc{Song, H.~F.}, \textsc{Mediano, P.~A.},
+  \textsc{Zambaldi, V.}, \textsc{Rabinowitz, N.~C.}, \textsc{Graepel, T.},
+  \textsc{Botvinick, M.} and \textsc{Battaglia, P.~W.} (2018).
+\newblock Relational forward models for multi-agent learning.
+\newblock \textit{arXiv preprint arXiv:1809.11044}.
+
+\bibitem[{Zhang(2019)}]{reward_design_quip}
+\textsc{Zhang, K.} (2019).
+\newblock Reward function design for multi-car racing.
+\newblock \url{https://quip-amazon.com/fpfoA9DUYyG1}.
+
+\end{thebibliography}
