@@ -236,7 +236,7 @@ where $\delta^i_t$ is the TD error for agent $i$, $\alpha_t,\beta_t>0$ are both 
  Moreover, usually $\alpha_t$ is larger than $\beta_t$ as $t\to\infty$, i.e., $\lim_{t\to\infty}\beta_t/\alpha_t=0$, in order to ensure  that the  critic step performs faster than the actor step. This is also known as a \emph{two-timescale} update. 
 
 In practice, both critic and actor can be updated in a mini-batch fashion. See Algorithm \ref{alg:batch_AC} for the details. Note that the minimization in line $11$ in Algorithm \ref{alg:batch_AC}  can be solved by any nonconvex optimization solvers, or by just several iterations of gradient steps w.r.t. $\omega^i$.  
-
+Note that this Algorithm \ref{alg:batch_AC} is indeed a variant of MADDPG, namely, Algorithm $1$ in \cite{lowe2017multi}, with a \emph{centralized-training-decentralized-execution} paradigm. 
 
 %\#
 %\nabla_{\theta^i} J^i(\theta)&=\EE\big[\nabla\log\pi^i_{\theta^i}(a^i\given s)\cdot Q^i_{{\pi}_\theta}(s,a^1,\cdots,a^N)\big]\\
@@ -264,7 +264,7 @@ In practice, both critic and actor can be updated in a mini-batch fashion. See A
 		\$
 		y_t=\pi_{\theta^{0,i}}(s_t)[a_t]+\gamma \oQ_{\omega^i}(s_{t+1},a^1_{t+1},\cdots,a^N_{t+1})\biggiven_{a^i_{t+1}\sim\pi_{\theta^i}(\cdot\given s_{t+1})},
 		\$
-		\STATE Update critic by minimizing the loss $\cL(\theta^i)=\frac{1}{S}\sum_{t=1}^S\big(y_t-\oQ_{\omega^i}(s_{t},a_{t})\big)^2$
+		\STATE Update critic by minimizing the loss $\cL(\theta^i)=\frac{1}{S}\sum_{t=1}^S\big(y_t-\oQ_{\omega^i}(s_{t},a_{t})\big)^2$. 
 		\STATE Update actor using the sampled policy gradient
 		\$
 		\nabla_{\theta^i} J^i(\theta)&\approx\frac{1}{S}\sum_{t=1}^S\nabla\log\pi_{\theta^i}(a^i_t\given s_t)\oQ^i_{\tilde{\pi}_\theta}(s_t,a_t),~ 
