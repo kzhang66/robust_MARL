@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  15 DEC 2019 21:51
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.5.23)  16 JAN 2020 15:49
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -1334,16 +1334,16 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `math shift' on input line 177.
 
 [4]) (./algorithm.tex [5]
-LaTeX Font Info:    Try loading font information for TS1+jkp on input line 72.
+LaTeX Font Info:    Try loading font information for TS1+jkp on input line 73.
  (/usr/local/texlive/2017/texmf-dist/tex/latex/kpfonts/ts1jkp.fd
 File: ts1jkp.fd 2007/08/30 Fontinst v1.928 font definitions for TS1/jkp.
 )
-Overfull \hbox (0.57385pt too wide) in paragraph at lines 80--85
+Overfull \hbox (0.57385pt too wide) in paragraph at lines 81--86
 [][]\T1/jkp/b/n/10 Assumption 3.3. []\T1/jkp/m/n/10 De-fine $[]\OT1/jkp/m/n/10 (\OML/jkp/m/it/10 s\OT1/jkp/m/n/10 ) = [[](\OML/jkp/m/it/10 s; a[]; a[]; []\OT1/jkp/m/n/10 (\OML/jkp/m/it/10 s; a\OT1/jkp/m/n/10 ))][]$ \T1/jkp/m/n/10 to be the es-ti-mates of Q-value func-
  []
 
 [6] [7] [8] [9]
-Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 248.
+Package hyperref Info: bookmark level for unknown algorithm defaults to 0 on input line 249.
 ) (./simulation.tex) [10] [11] (./main.bbl)
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 82.
  [12]
@@ -1358,16 +1358,16 @@ Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 82.
 Here is how much of TeX's memory you used:
  11824 strings out of 492995
  166623 string characters out of 6132704
- 367572 words of memory out of 5000000
+ 366609 words of memory out of 5000000
  15001 multiletter control sequences out of 15000+600000
  133113 words of font info for 159 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  49i,16n,40p,1281b,898s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/kpfonts/kpfonts-expert-sc.enc}{/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/kpfonts/kpfonts-expert.enc}</usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpbn8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpex.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpmi.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpmia.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpmit8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpmn8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpmne.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpmsc8a.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpmsce.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpsy.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpsyb.pfb></usr/local/texlive/2017/texmf-dist/fonts/type1/public/kpfonts/jkpsyc.pfb>
-Output written on main.pdf (12 pages, 171035 bytes).
+Output written on main.pdf (12 pages, 170884 bytes).
 PDF statistics:
- 327 PDF objects out of 1000 (max. 8388607)
- 298 compressed objects within 3 object streams
+ 324 PDF objects out of 1000 (max. 8388607)
+ 295 compressed objects within 3 object streams
  83 named destinations out of 1000 (max. 500000)
  97 words of extra memory for PDF output out of 10000 (max. 10000000)
 

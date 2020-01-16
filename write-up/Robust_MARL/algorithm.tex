@@ -24,7 +24,7 @@ Building upon the VI update in \eqref{equ:VI_Robust_MG}, one can develop Q-learn
 \#\label{equ:Q_Bellman}
 \oQ_*^i\big(s,a,\oR^i(s,a)\big):=\oR^i(s,a)
 %\sum_{\oR^i_s\in \ocR^i_s}\pi^0_*\big(\oR^i_s\biggiven i, s\big)\oR^i(s,a)
-+\gamma \sum_{s'\in\cS}P(s'\given s,a)\sum_{a'}\prod_{j=1}^N\pi^j_*(a'^j\given s')\oQ_*^i\big(s',a',\oR^i_*(s',a')\big)
++\gamma \sum_{s'\in\cS}P(s'\given s,a)\sum_{a'}\bigg(\prod_{j=1}^N\pi^j_*(a'^j\given s')\bigg)\oQ_*^i\big(s',a',\oR^i_*(s',a')\big)
 %\max_{\pi^i(\cdot\given s)}~\min_{\oR^i_s\in\ocR_s}~ \sum_{a\in\cA} \prod_{j=1}^N\pi^j(a^j\given s)\bigg(\oR^i(s,a)+\gamma \sum_{s'\in\cS}P(s'\given s,a)\oV^i(s')\bigg)\notag\\ 
 \#
 where recall that $a=(a^1,\cdots,a^N)$ and $a'=(a'^1,\cdots,a'^N)$, 
@@ -32,7 +32,7 @@ where recall that $a=(a^1,\cdots,a^N)$ and $a'=(a'^1,\cdots,a'^N)$,
 $\pi^j_*$ is the policy of agent $j$ at the equilibrium, and 
 %$\pi^{0,i}_*(s)[a]$ 
 $\oR^i_*(s',a')$ 
-is the $a$-th element of $\oR^i_{*,s'}=\pi^{0,i}_*(s')$, the 
+is the $a'$-th element of $\oR^i_{*,s'}=\pi^{0,i}_*(s')$, the 
 output of the nature's deterministic policy  at the equilibrium. 
 %Note that . 
 %Also n
@@ -54,8 +54,9 @@ The equilibrium policies are obtained based on the Q-value estimate $\oQ_t=(\oQ_
 	\sum_{a\in\cA} \pi^i(a^i\given s)\prod_{j\neq i}\pi^j_*(a^j\given s)\oQ^i_{t}\big(s,a,\pi^{0,i}(s)[a]\big),
 	\$
 	where $\oR^i(s,a)$ is the $a$-th element of the vector $\oR^i_s$. 
- Note that this update \eqref{equ:Q_learning_Robust_MG} needs to maintain the Q-value update of all agents, i.e., $\oQ^i_t$ for all agents, increases the complexity of the algorithm.  This is inevitable for value-based RL for general-sum Markov games, and the same issue also occurs in the design of Nash-Q learning \citep{hu2003nash}.  Another issue is that it is not clear how to obtain the equilibrium policy $\pi^i_{*,t}$ using $\oQ_t$, even in the simplest zero-sum case. {In particular, this  follows from the fact that for standard Markov games (without robustness concern), such an equilibrium policy $\pi^i_{*,t}(\cdot\given s)$ at time $t$ can be obtained by solving a linear program that solves for the Nash equilibrium of the matrix game with payoff matrix $\big(\oQ^1_t(\cdot\given s_{t+1}),\cdots,\oQ^N_t(\cdot\given s_{t+1})\big)$ \citep{hu2003nash}. This can be further simplified by solving a minimax problem using linear programming in the zero-sum setting. 
- However, it is not clear how to obtain the nature's equilibrium policy $\pi^0_*$ without without knowing the model $P$, which is required in solving \eqref{equ:Q_Bellman}}. Zero-sum assumption on the reward function also does not simplify the problem, since the nature always plays against each player, which makes this three-player game non-zero sum. 
+ Note that this update \eqref{equ:Q_learning_Robust_MG} needs to maintain the Q-value update of all agents, i.e., $\oQ^i_t$ for all agents, increases the complexity of the algorithm.  This is inevitable for value-based RL for general-sum Markov games, and the same issue also occurs in the design of Nash-Q learning \citep{hu2003nash}.  Another issue is that it is  computationally hard to calculate the equilibrium with payoff matrix $\big(\oQ^1_t(\cdot\given s_{t+1}),\cdots,\oQ^N_t(\cdot\given s_{t+1})\big)$, which usually involves solving a large-scale  linear programming problem.
+% not clear how to obtain the equilibrium policy $\pi^i_{*,t}$ using $\oQ_t$, even in the simplest zero-sum case. {In particular, this  follows from the fact that for standard  Markov games (without robustness concern), such an equilibrium policy $\pi^i_{*,t}(\cdot\given s)$ at time $t$ can be obtained by solving a linear program that solves for the Nash equilibrium of the matrix game with payoff matrix $\big(\oQ^1_t(\cdot\given s_{t+1}),\cdots,\oQ^N_t(\cdot\given s_{t+1})\big)$ \citep{hu2003nash}. This can be further simplified by solving a minimax problem using linear programming in the zero-sum setting. 
+% However, it is not clear how to obtain the nature's equilibrium policy $\pi^0_*$ without knowing the model $P$, which is required in solving \eqref{equ:Q_Bellman}}. Zero-sum assumption on the reward function also does not simplify the problem, since the nature always plays against each player, which makes this three-player game non-zero sum. 
 % \issue{XXXX TO BE SHOWN XXXX}
 
 \subsubsection{Convergence Results}
@@ -77,7 +78,7 @@ To simplify the notation, we consider the setting with two agents without loss o
 We also make the following assumption on the structure of the game, as in Nash-Q learning \citep{hu2003nash}.
 
 \begin{assumption}\label{assump:equi_point}
-Define $\oQ^i_t(s)=[\oQ^i_t(s,a^1,a^2,\oR^i(s,a))]_{a^1\in\cA^1,a^2\in\cA^2,\oR^i_s\in\ocR^i_s}$ to be the estimates of Q-value functions at iteration $t$ of \eqref{equ:Q_learning_Robust_MG}, and define the \emph{stage} robust Markov perfect Nash equilibrium for  $(\oQ^1_t(s),\oQ^2_t(s))$  as the tuple of policies  $\big(\{\pi^{0,i}_*(s)\}_{i\in[N]},\pi^1_*(\cdot\given s), \pi^2_*(\cdot\given s)\big)$ that is obtained from
+Define $\oQ^i_t(s)=[\oQ^i_t(s,a^1,a^2,\oR^i(s,a))]_{a^1\in\cA^1,a^2\in\cA^2,\oR^i_s\in\ocR^i_s}$ to be the estimates of Q-value functions at iteration $t$ of \eqref{equ:Q_learning_Robust_MG}, and define the \emph{stage} robust Markov perfect Nash equilibrium for  $(\oQ^1_t(s),\oQ^2_t(s))$  as the tuple of policies  $\big(\{\pi^{0,i}_*(s)\}_{i\in\cN},\pi^1_*(\cdot\given s), \pi^2_*(\cdot\given s)\big)$ that is obtained from
 \#\label{equ:def_stage_RMPNE}
 \big(\pi^i_{*}(\cdot\given s),\pi^{0,i}_{*}(s)\big)\in\argmaxmin_{\pi^i(\cdot\given s),\pi^{0,i}(s)}~&
 %	\sum_{\oR^i_s\in \ocR^i_s}
@@ -264,7 +265,7 @@ Note that this Algorithm \ref{alg:batch_AC} is indeed a variant of MADDPG, namel
 		\$
 		y_t=\pi_{\theta^{0,i}}(s_t)[a_t]+\gamma \oQ_{\omega^i}(s_{t+1},a^1_{t+1},\cdots,a^N_{t+1})\biggiven_{a^i_{t+1}\sim\pi_{\theta^i}(\cdot\given s_{t+1})},
 		\$
-		\STATE Update critic by minimizing the loss $\cL(\theta^i)=\frac{1}{S}\sum_{t=1}^S\big(y_t-\oQ_{\omega^i}(s_{t},a_{t})\big)^2$. 
+		\STATE Update critic by minimizing the loss $\cL(\omega^i)=\frac{1}{S}\sum_{t=1}^S\big(y_t-\oQ_{\omega^i}(s_{t},a_{t})\big)^2$. 
 		\STATE Update actor using the sampled policy gradient
 		\$
 		\nabla_{\theta^i} J^i(\theta)&\approx\frac{1}{S}\sum_{t=1}^S\nabla\log\pi_{\theta^i}(a^i_t\given s_t)\oQ^i_{\tilde{\pi}_\theta}(s_t,a_t),~ 
